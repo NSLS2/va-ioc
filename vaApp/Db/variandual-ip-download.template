@@ -1,0 +1,152 @@
+## Database for FE Ion pump Parameter download
+## Mar 23, 2011, BNL
+
+record(mbbo, "$(Sys){}DB:IP_Type-Sel")
+{
+	field(DESC, "IP Type Sel")
+	field(ZRST, "200L/s")
+	field(FLNK, "$(Sys){}DB:IP_Type-ASub_")
+	field(VAL,  "0")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(aSub, "$(Sys){}DB:IP_Type-ASub_")
+{
+	field(INAM, "asubIPInit")
+	field(SNAM, "asubIPParam")
+	field(INPA, "$(Sys){}DB:IP_Type-Sel")
+	field(FTA,  "SHORT")
+	field(NOA,  "1")	
+	field(OUTA, "$(Sys){}DB:IP_P_100nA-SP PP")
+	field(FTVA, "DOUBLE")
+	field(NOVA, "1")
+	field(OUTB, "$(Sys){}DB:IP_P_10uA-SP PP")
+	field(FTVB, "DOUBLE")
+	field(NOVB, "1")
+	field(OUTC, "$(Sys){}DB:IP_P_10mA-SP PP")
+	field(FTVC, "DOUBLE")
+	field(NOVC, "1")	
+	field(OUTD, "$(Sys){}DB:IP_P_400mA-SP PP")
+	field(FTVD, "DOUBLE")	
+	field(NOVD, "1")
+	field(OUTE, "$(Sys){}DB:IP_P_SP1-SP PP")
+        field(FTVE, "DOUBLE")
+        field(NOVE, "1")
+	field(OUTF, "$(Sys){}DB:IP_P_SP2-SP PP")
+        field(FTVF, "DOUBLE")
+        field(NOVF, "1")
+}
+
+record(longout, "$(Sys){}DB:IP_E_Max-SP")
+{
+        field(DESC, "Max Volt")
+        field(EGU,  "V")
+        field(ASG,  "VAWRITE")
+        field(HOPR, "7000")
+        field(LOPR, "3000")
+        field(VAL,  "5000")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(longout, "$(Sys){}DB:IP_I_Max-SP")
+{
+        field(DESC, "Max Current")
+        field(EGU,  "mA")
+        field(ASG,  "VAWRITE")
+        field(HOPR, "400")
+        field(LOPR, "100")
+	field(VAL,  "100")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(longout, "$(Sys){}DB:IP_Pwr_Max-SP")
+{
+        field(DESC, "Max Power")
+        field(EGU,  "W")
+        field(ASG,  "VAWRITE")
+        field(HOPR, "400")
+        field(LOPR, "100")
+	field(VAL,  "200")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_100nA-SP")
+{
+        field(DESC, "Pr@5000V I=100nA Set")
+        field(ASG,  "VAWRITE")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+        field(LOPR, "1.0E-9")
+        field(HOPR, "9.9E-4")
+	field(VAL,  "2.4E-11")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_10uA-SP")
+{
+        field(DESC, "Pr@5000V I=10uA Set")
+        field(ASG,  "VAWRITE")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+        field(LOPR, "1.0E-9")
+        field(HOPR, "9.9E-4")
+	field(VAL,  "2.4E-9")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_10mA-SP")
+{
+        field(DESC, "Pr@5000V I=10mA Set")
+        field(ASG,  "VAWRITE")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+        field(LOPR, "1.0E-9")
+        field(HOPR, "9.9E-4")
+	field(VAL,  "2.4E-6")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_400mA-SP")
+{
+        field(DESC, "Pr@5000V I=400mA Set")
+        field(ASG,  "VAWRITE")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+        field(LOPR, "1.0E-6")
+        field(HOPR, "9.9E2")
+	field(VAL,  "1.1E-4")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_SP1-SP")
+{
+        field(DESC, "Setpoint1 Set")
+        field(ASG,  "VAWRITE")
+        field(PREC, "1")
+        field(EGU,  "Torr")
+        field(LOPR, "1.0E-8")
+        field(HOPR, "1.0E-5")
+	field(VAL,  "5.0E-6")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_SP2-SP")
+{
+	field(DESC, "Setpoint2 Set")
+	field(ASG,  "VAWRITE")
+	field(PREC, "1")
+	field(EGU,  "Torr")
+     	field(LOPR, "1.0E-9")
+     	field(HOPR, "1.0E-5")
+	field(VAL,  "1.0E-8")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_Warn-SP")
+{
+	field(DESC, "Warn P")
+	field(VAL,  "5.0E-6")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+}
+

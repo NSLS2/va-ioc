@@ -1,0 +1,34 @@
+# Database for Gamma MPCq
+
+## Substitutions:
+## Sys	-	Primary system
+## Cntl	-	Pump controller name
+## Dev	-	Pump name
+## PORT	-	IP or Serial port name
+## CHAN	-	Supply channel, 1, 2
+## DINUM -	Digial input channel, 1, 2, 3, 4
+
+# Get digital input configuration
+record(mbbi, "$(Sys)$(Cntl)Sts:DI$(DINUM)-Sts") 
+{
+	field(DESC, "DI$(DINUM) Status")
+	field(DTYP, "stream")
+	field(INP,  "@gammampcq-tcp.proto getDigInput($(DINUM),$(Sys)$(Cntl)) $(PORT)")
+	field(SCAN, "5 second")
+	field(ZNST, "Off")
+	field(ONST, "HV Interlock")
+	field(TWST, "HV Switch On/Off")
+	field(THST, "TSP1 Interlock")
+	field(FRST, "TSP2 Interlock")
+	field(PINI, "YES")
+}
+
+# Get digital input supply channel
+record(bi, "$(Sys)$(Cntl)Chan:DI$(DINUM)-Sts") 
+{
+	field(DESC, "DI$(DINUM) SP Chan")
+	field(ZNAM, "1")
+	field(ONAM, "2")
+}
+
+

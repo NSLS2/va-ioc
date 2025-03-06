@@ -1,0 +1,148 @@
+# Stream Device Protocol for the Varian TSP controller
+
+locktimeout = 10000;
+replytimeout = 1000;
+readtimeout  = 200;
+writetimeout = 100;
+
+# Autostart setting
+setAutostart {
+	out "\x81\x30\x32\x41%d%<xor7>";
+	in  "\x06";
+}
+
+getAutostart {
+	out "\x81\x30\x32\x41\x3F%<xor7>";
+	in  "\x01\x30\x32\x41%d%<xor7>";
+}
+
+# Baud rate
+getBaudrate {
+	out "\x81\x30\x32\x42\x3F%<xor7>";
+	in  "\x01\x30\x36\x42%d%<xor7>";
+}
+
+# Input current reading
+readInputI {
+	out "\x81\x30\x32\x43\x3F%<xor7>";
+	in  "\x01\x30\x36\x43%d%<xor7>";
+}
+
+# Error status
+getError {
+	out "\x81\x30\x32\x45\x3F%<xor7>";
+	in  "\x01\x30\x36\x45%d%<xor7>";
+}
+
+# Active filament
+setActiveFil {
+	out "\x81\x30\x36\x46%05d%<xor7>";
+	in  "\x06";
+}
+
+getActiveFil {
+	out "\x81\x30\x32\x46\x3F%<xor7>";
+	in  "\x01\x30\x36\x46%d%<xor7>";
+}
+
+# Start/stop controller
+setCtrl {
+	out "\x81\x30\x32\x47%d%<xor7>";
+	in  "\x06";
+}
+
+getCtrl {
+	out "\x81\x30\x32\x47\x3F%<xor7>";
+	in  "\x01\x30\x32\x47%d%<xor7>";
+}
+
+# Pressure threshold
+setThreshold {
+	out "\x81\x30\x37\x48%06.0e%<xor7>";
+	in  "\x06";
+}
+
+getThreshold {
+	out "\x81\x30\x32\x48\x3F%<xor7>";
+	in  "\x01\x30\x37\x48%e%<xor7>";
+}
+
+# Absorbed current
+getAbsorbedI {
+	out "\x81\x30\x32\x49\x3F%<xor7>";
+	in  "\x01\x30\x36\x49%d%<xor7>";
+}
+
+# Input pressure reading
+getInputP {
+	out "\x81\x30\x32\x4C\x3F%<xor7>";
+	in  "\x01\x30\x37\x4C%e%<xor7>";
+}
+
+# Controller operating mode
+setCtrlMode {
+	out "\x81\x30\x36\x4D%05d%<xor7>";
+	in  "\x06";
+}
+
+getCtrlMode {
+	out "\x81\x30\x32\x4D\x3F%<xor7>";
+	in  "\x01\x30\x36\x4D%i%<xor7>";
+}
+
+# Sublimation current
+setSublI {
+	out "\x81\x30\x36\x4E%05d%<xor7>";
+	in  "\x06";
+}
+
+getSublI {
+	out "\x81\x30\x32\x4E\x3F%<xor7>";
+	in  "\x01\x30\x36\x4E%d%<xor7>";
+}
+
+# Sublimation period
+setSublPd {
+	out "\x81\x30\x36\x50%{00030|00100|00300|00600|01200|02400|04800|19200}%<xor7>";
+	in  "\x06";
+}
+
+getSublPd {
+	out "\x81\x30\x32\x50\x3F%<xor7>";
+	in  "\x01\x30\x36\x50%{00030|00100|00300|00600|01200|02400|04800|19200}%<xor7>";
+}
+
+# Recover
+setRecover {
+	out "\x81\x30\x32\x52%d%<xor7>";
+	in  "\x06";
+}
+
+getRecover {
+	out "\x81\x30\x32\x52\x3F%<xor7>";
+	in  "\x01\x30\x32\x52%d%<xor7>";	
+}
+
+# Controller status
+getCtrlStatus {
+	out "\x81\x30\x32\x53\x3F%<xor7>";
+	in  "\x01\x30\x36\x53%d%<xor7>";
+}
+
+# Sublimation time
+setSublK {
+	out "\x81\x30\x36\x54%05d%<xor7>";
+	in  "\x06";
+}
+
+getSublK {
+	out "\x81\x30\x32\x54\x3F%<xor7>";
+	in  "\x01\x30\x36\x54%d%<xor7>";
+}
+
+# Absorbed voltage
+getAbsorbedV {
+	out "\x81\x30\x32\x56\x3F%<xor7>";
+	in  "\x01\x30\x36\x56%d%<xor7>";
+}
+

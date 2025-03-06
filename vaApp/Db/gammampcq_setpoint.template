@@ -1,0 +1,104 @@
+# Database for Gamma MPCq
+
+## Substitutions:
+## Sys	-	Primary system
+## Cntl	-	Pump controller name
+## Dev	-	Pump name
+## PORT	-	IP or Serial port name
+## CHAN	-	Supply channel, 1, 2
+## SPNUM -	Setpoint channel, 1, 2, 3, 4
+
+# Get setpoint configuration
+record(bi, "$(Sys)$(Cntl)Sts:Rly$(SPNUM)-Sts") 
+{
+	field(DESC, "Rly$(SPNUM) Status")
+	field(DTYP, "stream")
+#	field(FLNK, "$(Sys)$(Cntl)P:Rly$(SPNUM)On-RB")
+	field(INP,  "@gammampcq-tcp.proto getSetpoint($(SPNUM),$(Sys)$(Cntl)) $(PORT)")
+	field(SCAN, "5 second")
+	field(ZNAM, "De-energized")
+	field(ONAM, "Energized")
+	field(PINI, "YES")
+}
+
+# Get setpoint function
+record(mbbi, "$(Sys)$(Cntl)Sts:Rly$(SPNUM)Func-Sts") 
+{
+	field(DESC, "Rly$(SPNUM) Function")
+	field(ZRST, "Off")
+	field(ONST, "Pressure Setpoint")
+	field(TWST, "HV Error")
+	field(THST, "HV On/Off LED")"
+}
+ 
+# Get setpoint supply channel
+record(mbbi, "$(Sys)$(Cntl)Chan:Rly$(SPNUM)-Sts") 
+{
+	field(DESC, "Rly$(SPNUM) SP Chan")
+	field(ZRVL, "1")
+	field(ONVL, "2")
+	field(TWVL, "3")
+	field(THVL, "4")
+}
+ 
+# Get setpoint on value
+record(ai, "$(Sys)$(Cntl)P:Rly$(SPNUM)On-RB") 
+{
+	field(DESC, "SP On Point")
+	field(PREC, "1")
+}
+
+# Get setpoint off value
+record(ai, "$(Sys)$(Cntl)P:Rly$(SPNUM)Off-RB") 
+{
+	field(DESC, "SP Off Point")
+	field(PREC, "1")
+}
+
+# Set setpoint configuration
+record(bo, "$(Sys)$(Cntl)Cmd:Rly$(SPNUM)-Cmd") 
+{
+	field(DESC, "Set Setpoint")
+	field(DTYP, "stream")
+	field(OUT, "@gammampcq-tcp.proto setSetpoint($(SPNUM),$(Sys)$(Cntl)) $(PORT)")
+	field(ASG, "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Set setpoint supply
+record(mbbo, "$(Sys)$(Cntl)Chan:Rly$(SPNUM)-Sel") 
+{
+	field(DESC, "Set SP Chan")
+	field(ZRVL, "1")
+	field(ONVL, "2")
+	field(TWVL, "3")
+	field(THVL, "4")
+	info(autosaveFields_pass0, "VAL")
+}
+
+
+record(ao, "$(Sys)$(Cntl)P:Rly$(SPNUM)On-SP") 
+{
+	field(DESC, "Set SP On Point")
+	field(PREC, "1")
+	field(VAL,  "2E-7")
+	field(LOPR, "1E-8")
+	field(HOPR, "1E-6")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Set setpoint off value
+record(ao, "$(Sys)$(Cntl)P:Rly$(SPNUM)Off-SP") 
+{
+	field(DESC, "Set SP Off Point")
+	field(PREC, "1")
+	field(VAL,  "2E-7")
+	field(LOPR, "1E-8")
+	field(HOPR, "1E-6")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+

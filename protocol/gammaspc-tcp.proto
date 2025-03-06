@@ -1,0 +1,178 @@
+outTerminator = "\r";
+inTerminator = "\r\r\n>";
+LockTimeout = 10000;
+ReplyTimeout = 5000;
+ReadTimeout =  100;
+WriteTimeout = 100;
+
+extrainput   = Ignore;
+MaxInput = 0;
+
+## Pump controller general commands
+#  Model number
+getModel {
+	out "SPC 01";
+	in "OK 00 DIGITEL %s";
+}
+
+# Firmware revision 
+getFirmware {
+	out "SPC 02"; 
+	in "OK 00 FIRMWARE VERSION: %s"; 
+}
+
+# Execute software reset
+masterReset {
+	out "SPC 07";
+}
+
+# Set pressure unit
+setUnit {	
+	out "SPC 0E %{T|M|P}";
+	in "OK 00";
+}
+
+# Unlock/Lock keypad
+setKeypadLock {
+	out "SPC %{45|44}";
+	in "OK 00";
+}
+
+# Set HV auto recovery mode
+setHVAutoRecy {
+	out "SPC 68 %{0|1|2}";
+	in "OK 00";
+}
+
+# Get HV auto recovery mode
+getHVAutoRecy {
+	out "SPC 69";
+	in "OK 00 %{0|1|2}";
+}
+
+# Set communication mode
+setCommMode {
+	out "SPC D3 %{0|1|2}";
+	in "OK 00";
+}
+
+# Get communication mode
+getCommMode {
+	out "SPC D4";
+	in "OK 00 %{0|1|2}";
+}
+
+# Set supplies to automatically restart on power up
+setAutostartPower {
+	out "SPC 33 %{NO|YES}";
+	in "OK 00";
+}
+
+# Read auto restart status
+getAutostartPower {
+	out "SPC 34";
+	in "OK 00 %{NO|YES}";
+}
+
+## Ion Pump basic
+# Read current
+getCurrent {
+        out "SPC 0A";
+        in "OK 00 %f %(EGU)s";
+}
+
+# Read pressure
+getPressure {
+        out "SPC 0B";
+        in "OK 00 %f %(EGU)s";
+}
+
+# Read voltage
+getVoltage {
+        out "SPC 0C";
+        in  "OK 00 %i";
+}
+
+# Get supply status
+getSupplyStatus {
+	out "SPC 0D";
+        in  "OK 00 %{Pump Ready|Pump Starting|Pump Running|Pump Disabled|Pump Error|Pump Jump-starting|Suply Calibrating|Cooling. Start %*s}";
+	# in "OK 00 %{00|01|02|03}";
+}
+
+# Get pump size
+getPumpSize {
+	out "SPC 11";
+	in "OK 00 %i %(EGU)s";
+}
+
+# Set pump size
+setPumpSize {
+	out "SPC 12 %i";
+	in "OK 00";
+}
+
+# Get Arc detect
+getArcDetect {
+	out "SPC 92";
+	in "OK 00 %{NO|YES}";
+}
+
+# Set arc detect
+setArcDetect {
+	out "SPC 91 %{NO|YES}";
+	in "OK 00";
+}
+
+# Get calibration factor
+getCalFactor {
+	out "SPC 1D";
+	in "OK 00 %f";
+}
+
+# Set calibration factor
+setCalFactor {
+	out "SPC 1E %1.2f";
+	in "OK 00";
+}
+
+# Start/Stop pump
+setHVOn {
+        out "SPC 37";
+        in "OK 00";
+}
+
+setHVOff {
+        out "SPC 38";
+        in "OK 00";
+}
+
+# Get/Set current/pressure analog output 
+getAnalogOutMode {
+	out "SPC 50";
+	in "OK 00 %{0 Logarithmic pressure|1 Logarithmic current|2 Volts per 1.0uA|3 Volts per 10.0uA|4 Volts per 100.0uA|5 Volts per 1.0mA|6 Volts per 10.0mA|8 Volts per 1.0nA|9 Volts per 10.0nA|10 Volts per 100.0nA}";
+}
+
+setAnalogOutMode {
+	out "SPC 51 %u";
+	in "OK 00";
+	# @init { getAnalogOutMode; }
+}
+
+# Get HV status
+getHVState {
+	out "SPC 61";
+	in "OK 00 %{NO|YES}";
+}
+
+# Process set points
+getSetpoint {
+	out "SPC 3C";
+	in "OK 00 \$1,%(\$2Enbl:Rly\$1-Sts.VAL){0|1},%(\$2P:Rly\$1On-RB.VAL)E,%(\$2P:Rly\$1Off-RB.VAL)E,%{0|1}";
+
+}
+
+setSetpoint {
+	out "SPC 3D \$1,%(\$2Chan:Rly\$1-Sel.VAL){0|1},%(\$2P:Rly\$1On-SP.VAL)1.1E,%(\$2P:Rly\$1Off-SP.VAL)1.1E";
+	in "OK 00";
+}

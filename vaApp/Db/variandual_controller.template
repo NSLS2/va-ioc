@@ -1,0 +1,446 @@
+## Database for Varian Dual Ion Pump Controller
+## Mar 22, 2011, BNL
+
+## Substitutions
+## Sys          -       System
+## Cntl         -       Pump controller name
+## PORT         -       IP or Serial port name
+
+# Scan record
+record(bo, "$(Sys)$(Cntl)DB:Scan-Cmd_") 
+{
+	field(DESC, "Scan Record")
+	field(SCAN, "10 second")
+	field(FLNK, "$(Sys)$(Cntl)DB:Scan-Calc_")
+}
+
+# Calc the sequence for scan
+record(calcout, "$(Sys)$(Cntl)DB:Scan-Calc_") 
+{
+	field(DESC, "Scan Calc")
+	field(CALC, "(A<B)?(A+C):D")
+	field(INPA, "$(Sys)$(Cntl)DB:Scan-Calc_")
+	field(INPB, "5")
+	field(INPC, "1")
+	field(INPD, "1")
+	field(OUT,  "$(Sys)$(Cntl)DB:Scan-FOut_.SELN")
+	field(FLNK, "$(Sys)$(Cntl)DB:Scan-FOut_")
+}
+
+# Fanout record
+record(fanout, "$(Sys)$(Cntl)DB:Scan-FOut_")
+{
+	field(DESC, "Scan Fanout")
+	field(SELM, "Specified")
+	field(LNK1, "$(Sys)$(Cntl)Mode:Opr-Sts")
+	field(LNK2, "$(Sys)$(Cntl)Sts:Intlk-Wf")
+	field(LNK3, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+#	field(LNK4, "$(Sys)$(Cntl)Err-Sts")
+}
+
+# Controller Error
+record(mbbi, "$(Sys)$(Cntl)Err-Sts")
+{
+	field(DESC, "Error Status")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readErrorStatus(5) $(PORT)")
+	
+	field(ZRST, "No Error")
+	field(ONST, "RAM Failure")       
+	field(TWST, "Config Register")
+	field(THST, "Test Mode")
+	field(FRST, "Copyright")
+	field(FVST, "EEPROM Fault")
+	field(SXST, "Version Number")
+	field(SVST, "HV DSP Not Found")
+	field(EIST, "DSP Fault")
+	field(NIST, "Invalid Option")
+	field(TEST, "Unknown Option")
+	field(UNSV, "INVALID")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "MINOR")
+	field(TWSV, "MINOR")
+	field(THSV, "MINOR")
+	field(FRSV, "MINOR")
+	field(FVSV, "MINOR")
+	field(SXSV, "MINOR")
+	field(SVSV, "MINOR")
+	field(EISV, "MINOR")
+	field(NISV, "MINOR")
+	field(TESV, "MINOR")
+}
+
+## Controller commands
+record(mbbo, "$(Sys)$(Cntl)Mode:Opr-Cmd")
+{
+	field(DESC, "Set Operating Mode")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeOprMode $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode:Opr-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZRST, "LOCAL")
+	field(ONST, "REMOTE")
+	field(TWST, "SERIAL")
+}
+
+record(mbbi, "$(Sys)$(Cntl)Mode:Opr-Sts")
+{
+	field(DESC, "Read Operating Mode")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readOprMode $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode-Calc_")
+
+	field(ZRST, "LOCAL")
+	field(ONST, "REMOTE")
+	field(TWST, "SERIAL")
+}
+
+record(calcout, "$(Sys)$(Cntl)Mode-Calc_")
+{
+	field(DESC, "Mode Calc")
+	field(FLNK, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+	field(INPA, "$(Sys)$(Cntl)Mode:Opr-Sts")
+	field(OUT,  "$(Sys)$(Cntl)Mode:Ctrl-Sts_ PP")
+	field(CALC, "(A==2)?1:0")
+}
+
+record(bi, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+{
+	field(DESC, "Operation Status")
+	field(INP,  "$(Sys)$(Cntl)Mode-Calc_")
+	field(ZNAM, "Read Only")
+	field(ONAM, "Read/Write")
+}
+
+# Unit of measure
+record(mbbi, "$(Sys)$(Cntl)EU-Sts")
+{
+	field(DESC, "Units")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readUnit $(PORT)")
+
+	field(ZRST, "Torr")
+	field(ONST, "mBar")
+	field(TWST, "Pascal")
+}
+
+# Firmware version
+record(stringin, "$(Sys)$(Cntl)Ver:FwuC-I")
+{
+	field(DESC, "uc Version")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readUCVersion $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Ver:FwDSP-I")
+	field(PINI, "1")
+}
+
+record(stringin, "$(Sys)$(Cntl)Ver:FwDSP-I")
+{
+	field(DESC, "DSP Version")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readDSPVersion $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)EU-Sts")
+}
+
+#  Interlock status
+record(mbbiDirect, "$(Sys)$(Cntl)Sts:Intlk-Wf")
+{
+	field(DESC, "Raw Interlock Status")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readInterlockStatus $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Sts:Intlk-FOut_")
+	field(NOBT, "8")
+}
+
+record(fanout, "$(Sys)$(Cntl)Sts:Intlk-FOut_")
+{
+	field(DESC, "Interlock Status Coding")
+	field(LNK1, "$(Sys)$(Cntl)Sts:IntlkFP-Sts")
+	field(LNK2, "$(Sys)$(Cntl)Sts:IntlkHV1RemIO-Sts")
+	field(LNK3, "$(Sys)$(Cntl)Sts:IntlkHV1Cbl-Sts")
+	field(LNK4, "$(Sys)$(Cntl)Sts:IntlkHV2RemIO-Sts")
+	field(LNK5, "$(Sys)$(Cntl)Sts:IntlkHV2Cbl-Sts")
+}
+
+record(bi, "$(Sys)$(Cntl)Sts:IntlkFP-Sts")
+{
+	field(DESC, "Front Panel Interlock")
+	field(INP, "$(Sys)$(Cntl)Sts:Intlk-Wf.B1")
+	field(ZNAM, "FP Normal")
+	field(ONAM, "FP Intlk")
+}
+
+record(bi, "$(Sys)$(Cntl)Sts:IntlkHV1RemIO-Sts")
+{
+	field(DESC, "HV1 R.I/O Interlock")
+	field(INP, "$(Sys)$(Cntl)Sts:Intlk-Wf.B2")
+	field(ZNAM, "HV1 R.I/O Normal")
+	field(ONAM, "HV1 R.I/O Intlk")
+	field(OSV,  "MAJOR")
+}
+
+record(bi, "$(Sys)$(Cntl)Sts:IntlkHV1Cbl-Sts")
+{
+	field(DESC, "HV1 Cable Interlock")
+	field(INP, "$(Sys)$(Cntl)Sts:Intlk-Wf.B3")
+	field(ZNAM, "HV1 Cable Normal")
+	field(ONAM, "HV1 Cable Intlk")
+}
+
+record(bi, "$(Sys)$(Cntl)Sts:IntlkHV2RemIO-Sts")
+{
+	field(DESC, "HV2 R.I/O Interlock")
+	field(INP, "$(Sys)$(Cntl)Sts:Intlk-Wf.B6")
+	field(ZNAM, "HV2 R.I/O Normal")
+	field(ONAM, "HV2 R.I/O Intlk")
+	field(OSV,  "MAJOR")
+}
+
+record(bi, "$(Sys)$(Cntl)Sts:IntlkHV2Cbl-Sts")
+{
+	field(DESC, "HV2 Cable Interlock")
+	field(INP, "$(Sys)$(Cntl)Sts:Intlk-Wf.B7")
+	field(ZNAM, "HV2 Cable Normal")
+	field(ONAM, "HV2 Cable Intlk")
+}
+
+## Configuration commands
+#  Serial config
+record(bo, "$(Sys)$(Cntl)Mode:Cfg-Sel")
+{
+	field(DESC, "Serial Configure Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeSerialConfig $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_ PP")
+	field(ASG,  "VAWRITE")
+
+	field(ZNAM, "Normal Mode")
+	field(ONAM, "Config Mode")
+}
+
+record(bi, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+{
+	field(DESC, "Serial Configure")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readSerialConfig $(PORT)")
+	field(ZNAM, "Normal Mode")
+	field(ONAM, "Config Mode")
+}
+
+#  Short circuit voltage
+record(longout, "$(Sys)$(Cntl)E:SCC-SP")
+{
+	field(DESC, "Short Circuit V Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeSCCE $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)E:SCC-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+
+	field(DRVH, "7000")
+	field(DRVL, "1")
+	field(EGU, "V")
+}
+
+record(longin, "$(Sys)$(Cntl)E:SCC-RB")
+{
+	field(DESC, "Short Circuit Volt")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readSCCE $(PORT)")
+	field(HOPR, "7000")
+	field(LOPR, "1")
+	field(EGU, "V")
+	field(PINI, "1")
+}
+
+#  Short circuit current
+record(longout, "$(Sys)$(Cntl)I:SCC-SP")
+{
+	field(DESC, "Short Circuit I Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeSCCI $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)I:SCC-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+
+	field(HOPR, "400")
+	field(LOPR, "1")
+	field(EGU,  "mA")
+}
+
+record(longin, "$(Sys)$(Cntl)I:SCC-RB")
+{
+	field(DESC, "Short Circuit Current")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readSCCI $(PORT)")
+	field(HOPR, "400")
+	field(LOPR, "1")
+	field(EGU,  "mA")
+}
+                                                                                                                                                        
+#  Short circuit intervention time
+record(longout, "$(Sys)$(Cntl)Time:SCC-SP")
+{
+	field(DESC, "Short Circuit T Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeSCCK $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Time:SCC-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+
+	field(HOPR, 6000)
+	field(LOPR, 10)
+	field(EGU,  "ms")
+}
+
+record(longin, "$(Sys)$(Cntl)Time:SCC-RB")
+{
+	field(DESC, "Short Circuit Time")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readSCCK $(PORT)")
+	field(HOPR, 6000)
+	field(LOPR, 10)
+	field(EGU,  "ms")
+}
+
+# Protect intervention time
+record(longout, "$(Sys)$(Cntl)Time:Prot-SP")
+{
+	field(DESC, "Protect Time Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeProtectTime $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Time:Prot-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+
+	field(DRVH, "6000")
+	field(DRVL, "10")
+	field(EGU,  "ms")
+}
+
+record(longin, "$(Sys)$(Cntl)Time:Prot-RB")
+{
+	field(DESC, "Protect Time")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readProtectTime $(PORT)")
+	field(HOPR, 6000)
+	field(LOPR, 10)
+	field(EGU,  "ms")
+}
+
+# Protect at power on function enable delay time
+record(longout, "$(Sys)$(Cntl)Time:ProtDly-SP")
+{
+	field(DESC, "Protect Delay Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writeProtectDelay $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Time:ProtDly-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+
+	field(DRVH, "6000")
+	field(DRVL, "10")
+	field(EGU,  "ms")
+}
+
+record(longin, "$(Sys)$(Cntl)Time:ProtDly-RB")
+{
+	field(DESC, "Protect Delay")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readProtectDelay $(PORT)")
+	field(HOPR, "6000")
+	field(LOPR, 10)
+	field(EGU, "s")
+}
+
+# f(I, V) = Pressure calculation constant
+record(ao, "$(Sys)$(Cntl)P:Delta1-SP")
+{
+	field(DESC, "Pressure Calc Constant Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writePrDeita1 $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)P:Delta1-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+
+	field(HOPR, 10)
+	field(LOPR, 0)
+	field(PREC, "1")
+}
+
+record(ai, "$(Sys)$(Cntl)P:Delta1-RB")
+{
+	field(DESC, "Pressure Calc Constant")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readPrDeita1 $(PORT)")
+	field(HOPR, "10")
+	field(LOPR, 0)
+	field(PREC, "1")
+}
+
+# f(I, V) = Pressure calculation constant
+record(ao, "$(Sys)$(Cntl)P:Delta2-SP")
+{
+	field(DESC, "Pressure Calc Constant Set")
+	field(DTYP, "stream")
+	field(OUT,  "@variandual.proto writePrDeita2 $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)P:Delta2-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Cfg-Sts")
+	field(ASG,  "VAWRITE")
+#	info(autosaveFields_pass0, "VAL")
+
+	field(HOPR, 10)
+	field(LOPR, 0)
+	field(PREC, "1")
+}
+
+record(ai, "$(Sys)$(Cntl)P:Delta2-RB")
+{
+	field(DESC, "Pressure Calc Constant")
+	field(DTYP, "stream")
+	field(INP,  "@variandual.proto readPrDeita2 $(PORT)")
+	field(HOPR, 10)
+	field(LOPR, 0)
+	field(PREC, "1")
+}
+
+# Force record processing
+record(bo, "$(Sys)$(Cntl)DB:Proc-Cmd")
+{
+        field(DESC, "Process Record")
+        field(FLNK, "$(Sys)$(Cntl)DB:Proc-Seq_")
+}
+
+record(seq, "$(Sys)$(Cntl)DB:Proc-Seq_")
+{
+        field(DESC, "Proc Seqence")
+        field(SELM, "All")
+        field(DO1, "1")
+        field(DO2, "1")
+        field(DO3, "1")
+        field(DO4, "1")
+        field(DO5, "1")
+        field(DO6, "1")
+        field(DO7, "1")
+	field(DO8, "1")
+        field(LNK1, "$(Sys)$(Cntl)E:SCC-RB.PROC PP")
+        field(LNK2, "$(Sys)$(Cntl)I:SCC-RB.PROC PP")
+        field(LNK3, "$(Sys)$(Cntl)Time:SCC-RB.PROC PP")
+        field(LNK4, "$(Sys)$(Cntl)Time:Prot-RB.PROC PP")
+        field(LNK5, "$(Sys)$(Cntl)Time:ProtDly-RB.PROC PP")
+        field(LNK6, "$(Sys)$(Cntl)P:Delta1-RB.PROC PP")
+        field(LNK7, "$(Sys)$(Cntl)P:Delta2-RB.PROC PP")
+	field(LNK8, "$(Sys)$(Cntl)EU-Sts.PROC PP")
+}
+

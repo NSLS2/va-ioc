@@ -1,0 +1,97 @@
+# Database for Gamma MPC
+
+## Substitutions:
+## Sys	-	Primary system
+## Cntl	-	Gauge controller name
+## Dev	-	Gauge name
+## PORT	-	IP or Serial port name
+## CHAN	-	PS channel, 1, 2
+
+# Get setpoint configuration
+record(bi, "$(Sys)$(Cntl)Sts:Rly$(SPNUM)-Sts") 
+{
+	field(DESC, "Setpoint Status")
+	field(DTYP, "stream")
+	field(FLNK, "$(Sys)$(Cntl)P:Rly$(SPNUM)On-RB")
+	field(INP,  "@gammampc.proto getSetpoint($(SPNUM),$(Sys),$(Cntl)) $(PORT)")
+	field(SCAN, "5 second")
+	field(ZNAM, "Inactive")
+	field(ONAM, "Active")
+	field(PINI, "YES")
+}
+
+# Get setpoint supply
+record(mbbi, "$(Sys)$(Cntl)Chan:Rly$(SPNUM)-Sts") 
+{
+	field(DESC, "SP Chan")
+	field(PINI, "YES")
+	field(ZRST, "0")
+	field(ONST, "1")
+	field(TWST, "2")
+}
+
+# Get setpoint on value
+record(ai, "$(Sys)$(Cntl)P:Rly$(SPNUM)On-RB") 
+{
+	field(DESC, "SP On Point")
+	field(PINI, "YES")
+	field(PREC, "1")
+}
+
+# Get setpoint off value
+record(ai, "$(Sys)$(Cntl)P:Rly$(SPNUM)Off-RB") 
+{
+	field(DESC, "SP Off Point")
+	field(PINI, "YES")
+	field(PREC, "1")
+}
+
+# Set setpoint configuration
+record(bo, "$(Sys)$(Cntl)Cmd:Rly$(SPNUM)-Cmd") 
+{
+	field(DESC, "Set Setpoint")
+	field(DTYP, "stream")
+	field(OUT, "@gammampc.proto setSetpoint($(SPNUM),$(Sys),$(Cntl)) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ASG, "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Set setpoint supply
+record(mbbo, "$(Sys)$(Cntl)Chan:Rly$(SPNUM)-Sel") 
+{
+	field(DESC, "Set SP Chan")
+	field(ZRST, "0")
+	field(ONST, "1")
+	field(TWST, "2")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+
+record(ao, "$(Sys)$(Cntl)P:Rly$(SPNUM)On-SP") 
+{
+	field(DESC, "Set SP On Point")
+	field(PREC, "1")
+	field(VAL,  "2E-7")
+	field(LOPR, "1E-8")
+	field(HOPR, "1E-6")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Set setpoint off value
+record(ao, "$(Sys)$(Cntl)P:Rly$(SPNUM)Off-SP") 
+{
+	field(DESC, "Set SP Off Point")
+	field(PREC, "1")
+	field(VAL,  "2E-7")
+	field(LOPR, "1E-8")
+	field(HOPR, "1E-6")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+

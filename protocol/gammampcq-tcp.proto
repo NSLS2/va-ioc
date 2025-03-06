@@ -1,0 +1,128 @@
+outTerminator = "\r";
+inTerminator = "\r\r\n>";
+LockTimeout = 5000;
+ReplyTimeout = 1000;
+ReadTimeout =  100;
+WriteTimeout = 100;
+
+extrainput   = Ignore;
+MaxInput = 0;
+
+## Pump controller general commands
+
+#  Model number
+getModel {
+	out "cmd 01";
+	in "OK 00 DIGITEL %s";
+}
+
+# Firmware revision 
+getFirmware {
+	out "cmd 02"; 
+	in "OK 00 FIRMWARE VERSION: %s"; 
+}
+
+# Set supplies to automatically restart on power up
+setAutostartPower {
+	out "cmd 33 \$1,%{N|Y}";
+	in "OK 00";
+}
+
+# Read auto restart status
+getAutostartPower {
+	out "cmd 34 \$1";
+	in "OK 00 %{NO|YES}";
+}
+
+## Ion Pump basic
+# Read current
+getCurrent {
+        out "cmd 0A \$1";
+        in "OK 00 %E %(EGU)s";
+}
+
+# Read pressure
+getPressure {
+        out "cmd 0B \$1";
+        in "OK 00 %E %(EGU)s";
+}
+
+# Read voltage
+getVoltage {
+        out "cmd 0C \$1";
+        in  "OK 00 %i";
+}
+
+# Get supply status
+getSupplyStatus {
+	out "cmd 0D \$1,00";
+        in  "OK 00 %{00|01|02|03|04}";
+}
+
+# Get pump size
+getPumpSize {
+	out "cmd 11 \$1";
+	@mismatch {in "";}
+	in "OK 00 %i %(EGU)s";
+}
+
+# Set pump size
+setPumpSize {
+	out "cmd 12 \$1,%i";
+	in "OK 00";
+}
+
+# Get pressure factor
+getCalFactor {
+	out "cmd 1D \$1";
+	in "OK 00 %f";
+}
+
+# Set pressure factor
+setCalFactor {
+	out "cmd 1E \$1,%1.2f";
+	in "OK 00";
+}
+
+# Start/Stop pump
+setHVOn {
+        out "cmd 37 \$1";
+        in "OK 00";
+}
+
+setHVOff {
+        out "cmd 38 \$1";
+        in "OK 00";
+}
+
+# Get/Set analog output mode
+getAnalogOutMode {
+	out "cmd 5A \$1";
+	in "OK 00 \$2,%{00|01|02|03|04|05|06|07|08|09|10|11|12},%(\$3Val:LogOffset-RB.VAL)d,%(\3Mode:Invert-Sts.VAL){0|1},%(\$3Mode:Resp-Sts){0|1})";
+}
+
+# Get HV status, not in manual anymore
+getHVState {
+	out "cmd 61 \$1";
+	in "OK 00 %{NO|YES}";
+}
+
+# Process set points
+getSetpoint {
+	out "cmd 3B \$1";
+	in "OK 00 \$1,%(\$2Sts:Rly\$1Func-Sts.VAL)d,%(\$2Chan:Rly\$1-Sts.VAL){1|2},%(\$2P:Rly\$1On-RB.VAL)E,%(\$2P:Rly\$1Off-RB.VAL)E,%{0|1}";
+}
+
+setSetpoint {
+	out "cmd 3B \$1,1,%(\$2Chan:Rly\$1-Sel.VAL){1|2},%(\$2P:Rly\$1On-SP.VAL)1.1E,%(\$2P:Rly\$1Off-SP.VAL)1.1E";
+	in "OK 00";
+}
+
+# Get digital input configuration
+getDigiInput {
+	out "cmd 58 \$1";
+	in "OK 00 %(\$2Chan:Digi\$1-Sts.VAL){1|2},%{00|01|02|03|04}";
+}
+
+
+

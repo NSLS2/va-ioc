@@ -1,0 +1,50 @@
+## Database for Ion pump Parameter download
+
+record(mbbo, "$(Sys){}DB:IP_E_Max-Sel")
+{
+        field(DESC, "Set Max Voltage")
+	field(ZRVL, "3000")
+	field(ONVL, "4000")
+	field(TWVL, "5000")
+	field(THVL, "6000")
+	field(FRVL, "7000")
+        field(ZRST, "3000 V")
+        field(ONST, "4000 V")
+	field(TWST, "5000 V")
+        field(THST, "6000 V")
+	field(FRST, "7000 V")
+	field(VAL,  "2")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(longout, "$(Sys){}DB:IP_Pwr_Max-SP")
+{
+        field(DESC, "Max Power")
+        field(EGU,  "W")
+        field(ASG,  "VAWRITE")
+        field(HOPR, "400")
+        field(LOPR, "100")
+	field(VAL,  "200")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_SP1-SP")
+{
+        field(DESC, "Setpoint1 Set")
+        field(ASG,  "VAWRITE")
+        field(PREC, "1")
+        field(EGU,  "Torr")
+        field(LOPR, "1.0E-8")
+        field(HOPR, "1.0E-5")
+	field(VAL,  "5.0E-6")
+        info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys){}DB:IP_P_Warn-SP")
+{
+        field(DESC, "Warn P")
+        field(VAL,  "5.0E-6")
+        field(ASG,  "VAWRITE")
+        info(autosaveFields_pass0, "VAL")
+}
+

@@ -1,0 +1,26 @@
+# Database for Gamma MPC
+
+## Substitutions:
+## Sys	-	Primary system
+## Cntl	-	Gauge controller name
+## Dev	-	Gauge name
+## PORT	-	IP or Serial port name
+
+## Pump controller general commands
+#  Model number
+record(stringin, "$(Sys)$(Cntl)ID:Model-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Model Number")
+	field(INP,  "@gammampcq-tcp.proto getModel $(PORT)")
+	field(PINI, "YES")
+}
+
+# Firmware revision 
+record(stringin, "$(Sys)$(Cntl)Ver:Fw-I")
+{
+	field(DTYP, "stream")
+	field(DESC, "Firmware Version")
+	field(INP,  "@gammampcq-tcp.proto getFirmware $(PORT)")
+	field(PINI, "YES")
+}

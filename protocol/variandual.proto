@@ -1,0 +1,476 @@
+# Stream Device Protocol for the Varian Dual Ion Pump controller
+
+# $1 = channel number: 1, 2
+# $2 = setpoint:       RLY, PRO or CTL
+
+locktimeout = 10000;
+replytimeout = 3000;
+readtimeout  = 2000;
+writetimeout = 200;
+
+## Controller commands
+# General commands
+readOprMode	{
+	maxinput=8;
+	out "\x81\x30\x34\x5a\x30\x30\x3f%<xor7>";
+	in  "\x01\x30\x34\x5a\x30\x30%{0|1|2}%<xor7>";
+}
+
+writeOprMode {
+	out "\x81\x30\x34\x5a\x30\x30%{0|1|2}%<xor7>";
+	in  "\x06";
+	@init {readOprMode; }
+}
+
+readUnit {
+	maxinput=8;
+	out "\x81\x30\x34\x44\x30\x30\x3f%<xor7>";
+	in  "\x01\x30\x34\x44\x30\x30%d%<xor7>";
+}
+
+# Firmware information
+readUCVersion {
+	maxinput=23;
+	out "\x81\x30\x34\x45\x30\x30\x3f%<xor7>";
+	in  "\x01\x31\x39\x45\x30\x30%16c%<xor7>";
+}
+
+readDSPVersion {
+	maxinput=23;
+	out "\x81\x30\x34\x45\x31\x30\x3f%<xor7>";
+	in  "\x01\x31\x39\x45\x31\x30%16c%<xor7>";
+}
+
+
+# Reads the status of the interlocks
+readInterlockStatus {
+	maxinput=15;
+	out "\x81\x30\x34\x5d\x30\x30\x3f%<xor7>";
+	in  "\x01\x31\x31\x5d\x30\x30%i%<xor7>";
+}
+
+# Configuration commands
+readSerialConfig {
+	maxinput=8;
+	out "\x81\x30\x34\x78\x61\x30\x3f%<xor7>";
+	in  "\x01\x30\x34\x78\x61\x30%d%<xor7>";
+}
+
+writeSerialConfig {
+	out "\x81\x30\x34\x78\x61\x30%d%<xor7>";
+	in  "\x06";
+	@init {readSerialConfig; }
+}
+
+# Short circuilt voltage
+readSCCE {
+	maxinput=12;
+	out "\x81\x30\x34\x78\x63\x30\x3f%<xor7>";
+	in  "\x01\x30\x38\x78\x63\x30%d%<xor7>";
+}
+
+writeSCCE {
+	out "\x81\x30\x38\x78\x63\x30%d%<xor7>";
+	in  "\x06";
+}
+
+# Short circuilt current
+readSCCI {
+	maxinput=12;
+	out "\x81\x30\x34\x78\x64\x30\x3f%<xor7>";
+	in  "\x01\x30\x38\x78\x64\x30%d%<xor7>";
+}
+
+writeSCCI {
+	out "\x81\x30\x38\x78\x64\x30%d%<xor7>";
+	in  "\x06";
+}
+
+# Short circuit intervention time
+readSCCK {
+	maxinput=12;
+	out "\x81\x30\x34\x78\x65\x30\x3f%<xor7>";
+	in  "\x01\x30\x38\x78\x65\x30%d%<xor7>";
+}
+
+writeSCCK {
+	out "\x81\x30\x38\x78\x65\x30%d%<xor7>";	
+	in  "\x06";
+}
+
+# Protect intervention time
+readProtectTime {
+	maxinput=12;
+	out "\x81\x30\x34\x78\x66\x30\x3f%<xor7>";
+	in  "\x01\x30\x38\x78\x66\x30%d%<xor7>";
+}
+
+writeProtectTime {
+	out "\x81\x30\x38\x78\x66\x30%d%<xor7>";
+	in  "\x06";
+}
+
+# Protect at power on function enable delay time
+readProtectDelay {
+	maxinput=12;
+	out "\x81\x30\x34\x78\x67\x30\x3f%<xor7>";
+	in  "\x01\x30\x38\x78\x67\x30%d%<xor7>";
+}
+
+writeProtectDelay {
+	out "\x81\x30\x38\x78\x67\x30%d%<xor7>";
+	in  "\x06";
+}
+
+# f(I,V)=Pressure calculation constant
+readPrDeita1 {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x68\x30\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x68\x30%e%<xor7>";
+}
+
+writePrDeita1 {
+	out "\x81\x31\x30\x78\x68\x30%06.1e%<xor7>";
+	in  "\x06";
+}
+
+readPrDeita2 {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x69\x30\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x69\x30%e%<xor7>";
+}
+
+writePrDeita2 {
+	out "\x81\x31\x30\x78\x69\x30%06.1e%<xor7>";
+	in  "\x06";
+}
+
+## HV channel
+# Pressure value at 5000V with I=100nA
+readP100nA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x6a\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x6a\$1%e%<xor7>";
+}
+
+writeP100nA {
+	out "\x81\x31\x30\x78\x6a\$1%06.1e%<xor7>";
+	in  "\x06";
+#	@init {readP100nA; }
+}
+
+# Pressure value at 5000V with I=1uA
+readP1uA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x6b\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x6b\$1%e%<xor7>";
+}
+
+writeP1uA {
+	out "\x81\x31\x30\x78\x6b\$1%06.1e%<xor7>";
+	in  "\x06";
+}
+
+# Pressure value at 5000V with I=10uA
+readP10uA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x6c\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x6c\$1%e%<xor7>";
+}
+
+writeP10uA {
+	out "\x81\x31\x30\x78\x6c\$1%06.1e%<xor7>";
+	in  "\x06";
+#	@init {readP10uA; }
+}
+
+# Pressure value at 5000V with I=100uA
+readP100uA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x6d\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x6d\$1%e%<xor7>";
+}
+
+writeP100uA {
+	out "\x81\x31\x30\x78\x6d\$1%06.1e%<xor7>";
+	in  "\x06";
+}
+
+# Pressure value at 5000V with I=1mA
+readP1mA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x6e\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x6e\$1%e%<xor7>";
+}
+
+writeP1mA {
+	out "\x81\x31\x30\x78\x6e\$1%06.1e%<xor7>";
+	in  "\x06";
+}
+
+# Pressure value at 5000V with I=10mA
+readP10mA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x6f\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x6f\$1%e%<xor7>";
+}
+
+writeP10mA {
+	out "\x81\x31\x30\x78\x6f\$1%06.1e%<xor7>";
+	in  "\x06";
+#	@init {readP10mA; }
+}
+
+# Pressure value at 5000V with I=100mA
+readP100mA {
+	maxinput=14;
+	out "\x81\x30\x34\x78\x70\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x70\$1%e%<xor7>";
+}
+
+writeP100mA {
+	out "\x81\x31\x30\x78\x70\$1%06.1e%<xor7>";
+	in  "\x06";
+}
+
+# Pressure value at 5000V with I=400nA
+readP400mA {	
+	maxinput=14;
+	out "\x81\x30\x34\x78\x71\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x78\x71\$1%e%<xor7>";
+}
+
+writeP400mA {
+	out "\x81\x31\x30\x78\x71\$1%06.1e%<xor7>";
+	in  "\x06";
+#	@init {readP400mA; }
+}
+
+
+## High Voltage commands
+readHVStat {
+	maxinput=8;
+	out "\x81\x30\x34\x41\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x34\x41\x30\$1%{0|1}%<xor7>";
+}
+
+setHVOn {
+	out "\x81\x30\x34\x41\x30\$1\x31%<xor7>";
+        in  "\x06";
+        @init {readHVStat; }
+}
+
+setHVOff {
+	out "\x81\x30\x34\x41\x30\$1\x30%<xor7>";
+	in  "\x06";
+	@init {readHVStat; }
+}
+
+# Pump number set on the specified channel
+readDeviceNum {
+	maxinput=8;
+	out "\x81\x30\x34\x46\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x34\x46\x30\$1%d%<xor7>";
+}
+
+# Type of device set on the specified channel
+readDeviceType {
+	maxinput=23;
+	out "\x81\x30\x34\x46\x31\$1\x3f%<xor7>";
+	in  "\x01\x31\x39\x46\x31\$1%16c%<xor7>";
+}
+
+# Voltage measurement
+readVMeas {
+	maxinput=12;
+	out "\x81\x30\x34\x53\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x53\x30\$1%d%<xor7>";
+	@mismatch {in  "\x00\x30\x38\x53\x30\$1%d%<xor7>";}
+}
+
+# Current measurement
+readIMeas {
+	maxinput=14;
+	out "\x81\x30\x34\x54\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x54\x30\$1%e%<xor7>";
+	@mismatch {in  "\x00\x31\x30\x54\x30\$1%e%<xor7>";}
+	wait 5;
+}
+
+# Pressure measurement
+readPrMeas {
+	maxinput=14;
+	out "\x81\x30\x34\x55\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x55\x30\$1%e%<xor7>";
+	@mismatch {in  "\x00\x31\x30\x55\x30\$1%e%<xor7>";}
+	wait 5;
+}
+
+# HV error
+readErrorStatus {
+	maxinput=12;
+	out "\x81\x30\x34\x7a\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x7a\x30\$1%d%<xor7>";
+	@mismatch {in  "\x00\x30\x38\x7a\x30\$1%d%<xor7>";}
+	wait 5;
+}
+
+# Fixed/step mode
+readFixedStep {
+	maxinput=8;
+	out "\x81\x30\x34\x42\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x34\x42\x30\$1%{0|1}%<xor7>";
+}
+
+writeFixedStep {
+	out "\x81\x30\x34\x42\x30\$1%{0|1}%<xor7>";
+	in  "\x06";
+}
+
+# Start/protect mode
+readStartProtect {
+	maxinput=8;
+	out "\x81\x30\x34\x43\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x34\x43\x30\$1%{0|1}%<xor7>";
+}
+
+writeStartProtect {
+	out "\x81\x30\x34\x43\x30\$1%{0|1}%<xor7>";
+	in  "\x06";
+	@init {readStartProtect; }
+}
+
+# Power supply polarity
+readPSPolarity {
+	maxinput=8;
+	out "\x81\x30\x34\x47\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x34\x47\x30\$1%{0|1}%<xor7>";
+}
+
+# Vmax variable
+readMaxE {
+	maxinput=12;
+	out "\x81\x30\x34\x48\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x48\x30\$1%d%<xor7>";
+}
+
+writeMaxE {
+	out  "\x81\x30\x38\x48\x30\$1%5d%<xor7>";
+	in  "\x06";
+}
+
+# Imax variable
+readMaxI {
+	maxinput=12;
+	out "\x81\x30\x34\x49\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x49\x30\$1%d%<xor7>";
+}
+
+writeMaxI {
+	out "\x81\x30\x38\x49\x30\$1%05d%<xor7>";
+	in  "\x06";
+}
+
+# Pmax variable
+#readMaxP {
+#	out "\x81\x30\x34\x4a\x30\$1\x3f%<xor7>";
+#	in  "\x01\x30\x38\x4a\x30\$1%d%<xor7>";
+#}
+
+writeMaxP {
+	out "\x81\x30\x38\x4a\x30\$1%5d%<xor7>";
+	in  "\x06";
+}
+
+# Iprotect variable
+readProtectI {
+	maxinput=12;
+	out "\x81\x30\x34\x4b\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x4b\x30\$1%d%<xor7>";
+}
+
+writeProtectI {
+	out "\x81\x30\x38\x4b\x30\$1%d%<xor7>";
+	in  "\x06";
+}
+
+# Pstep1 variable
+readVStep1 {
+	maxinput=12;
+	out "\x81\x30\x34\x4c\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x4c\x30\$1%d%<xor7>";
+}
+
+writeVStep1 {
+	out "\x81\x30\x38\x4c\x30\$1%d%<xor7>";
+	in  "\x06";
+}
+
+# Istep1 variable
+readIStep1 {
+	maxinput=14;
+	out "\x81\x30\x34\x4d\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x4d\x30\$1%e%<xor7>";
+}
+
+writeIStep1 {
+	out "\x81\x31\x30\x4d\x30\$1%06.1e%<xor7>";
+	in  "\x06";
+}
+
+# Vstep2 variable
+readVStep2 {
+	maxinput=12;
+	out "\x81\x30\x34\x4e\x30\$1\x3f%<xor7>";
+	in  "\x01\x30\x38\x4e\x30\$1%d%<xor7>";
+}
+
+writeVStep2 {
+	out "\x81\x30\x38\x4e\x30\$1%d%<xor7>";
+	in  "\x06";
+}
+
+# Istep2 variable
+readIStep2 {
+	maxinput=14;
+	out "\x81\x30\x34\x4f\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x4f\x30\$1%e%<xor7>";
+}
+
+writeIStep2 {
+	out "\x81\x31\x30\x4f\x30\$1%06.1e%<xor7>";
+	in  "\x06";
+}
+
+# Set point 1 variable
+readSP1 {
+	maxinput=14;
+	out "\x81\x30\x34\x50\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x50\x30\$1%e%<xor7>";
+}
+
+writeSP1 {
+	out "\x81\x31\x30\x50\x30\$1%06.1e%<xor7>";
+	in  "\x06";
+	@init {readSP1; }
+}
+
+
+# Set point 2 variable
+readSP2 {
+	maxinput=14;
+	out "\x81\x30\x34\x51\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x30\x51\x30\$1%e%<xor7>";
+}
+
+writeSP2 {
+	out "\x81\x31\x30\x51\x30\$1%06.1e%<xor7>";
+	in  "\x06";
+	@init {readSP2; }
+}
+
+readRIOOutput {
+	maxinput=15;
+	out "\x81\x30\x34\x67\x30\$1\x3f%<xor7>";
+	in  "\x01\x31\x31\x67\x30\$1%b%<xor7>";
+}

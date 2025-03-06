@@ -1,0 +1,68 @@
+# Stream Device Protocol for the Varian Dual Ion Pump controller
+
+# $1 = channel number: 1, 2
+# $2 = setpoint:       RLY, PRO or CTL
+
+locktimeout = 10000;
+replytimeout = 1000;
+readtimeout  = 100;
+writetimeout = 200;
+
+# Logic type, 1 byte
+readLogicCmd   
+{
+        out "\x02\x80\$1\x30\x03%<bcc_2b>";
+        in  "\x02\x80\$1\x30%{0|1}\x03%<bcc_2b>";
+}
+
+writeLogicCmd
+{
+        out "\x02\x80\$1\x31%{0|1}\x03%<bcc_2b>";
+        in  "\x02\x80\x06\x03%<bcc_2b>";
+}
+
+# Numeric type, 6 bytes
+readNumCmd
+{
+	out "\x02\x80\$1\x30\x03%<bcc_2b>";
+	in  "\x02\x80\$1\x30%06d\x03%<bcc_2b>";
+}
+
+writeNumCmd
+{
+	out "\x02\x80\$1\x31%06d\x03%<bcc_2b>";
+	in  "\x02\x80\x06\x03%<bcc_2b>";
+}
+
+# Alphanumeric type, 10 bytes
+readAlphaCharCmd
+{
+	out "\x02\x80\$1\x30\x03%<bcc_2b>";
+	in  "\x02\x80\$1\x30%10c\x03%<bcc_2b>";
+}
+
+readAlphaBinCmd
+{
+        out "\x02\x80\$1\x30\x03%<bcc_2b>";
+        in  "\x02\x80\$1\x30%10b\x03%<bcc_2b>";
+}
+
+writeAlphaBinCmd
+{
+        out "\x02\x80\$1\x31%010b\x03%<bcc_2b>";
+        in  "\x02\x80\x06\x03%<bcc_2b>";
+}
+
+readAlphaExpCmd
+{
+        out "\x02\x80\$1\x30\x03%<bcc_2b>";
+        in  "\x02\x80\$1\x30%10E\x03%<bcc_2b>";
+}
+
+writeAlphaExpCmd
+{
+        out "\x02\x80\$1\x31\x20\x20\x20%7.1E\x03%<bcc_2b>";
+        in  "\x02\x80\x06\x03%<bcc_2b>";
+}
+
+

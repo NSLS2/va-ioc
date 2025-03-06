@@ -1,0 +1,263 @@
+# Database for Gamma MPC
+
+## Substitutions:
+## Sys	-	Primary system
+## Cntl	-	Gauge controller name
+## Dev	-	Gauge name
+## PORT	-	IP or Serial port name
+
+## Pump controller general commands
+#  Model number
+record(stringin, "$(Sys)$(Cntl)ID:Model-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Model Number")
+	field(INP,  "@gammampc.proto getModel $(PORT)")
+	field(PINI, "YES")
+}
+
+# Firmware revision 
+record(stringin, "$(Sys)$(Cntl)Ver:Fw-I")
+{
+	field(DTYP, "stream")
+	field(DESC, "Firmware Version")
+	field(INP,  "@gammampc.proto getFirmware $(PORT)")
+	field(PINI, "YES")
+}
+
+record(bo, "$(Sys)$(Cntl)Rst:Soft-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Reset")
+	field(OUT,  "@gammampc.proto masterReset $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ONAM, "RESET")
+	field(ASG,  "VAWRITE")
+}
+
+# Set pressure unit
+record(mbbo, "$(Sys)$(Cntl)EU-Sel") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Set Unit")
+	field(OUT,  "@gammampc.proto setUnit $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZRST, "Torr")
+	field(ONST, "Mbar")
+	field(TWST, "Pascal")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get line frequency
+record(ai, "$(Sys)$(Cntl)Freq:Line-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Line Freq")
+	field(INP,  "@gammampc.proto getLineFreq $(PORT)")
+	field(PINI, "YES")
+}
+
+# Turn the cooling fan on/off
+record(bo, "$(Sys)$(Cntl)Cmd:Fan-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Set Fan")
+	field(OUT,  "@gammampc.proto setFan $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZNAM, "OFF")
+	field(ONAM, "ON")
+	field(ZSV,  "MINOR")
+	field(OSV,  "NO_ALARM")
+	field(FLNK, "$(Sys)$(Cntl)Sts:Fan-Sts")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Unlock/Lock keypad
+record(bo, "$(Sys)$(Cntl)Cmd:KeyLck-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Unlock/Lock Keypad")
+	field(OUT,  "@gammampc.proto setKeypadLock $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZNAM, "UNLOCK")
+	field(ONAM, "LOCK")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Is fan on
+record(bi, "$(Sys)$(Cntl)Sts:Fan-Sts") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Fan Status")
+	field(INP,  "@gammampc.proto getFan $(PORT)")
+	field(ZNAM, "OFF")
+	field(ONAM, "ON")
+	field(ZSV,  "MINOR")
+	field(OSV,  "NO_ALARM")
+	field(SCAN, "2 second")
+	field(FLNK, "$(Sys)$(Cntl)Mode:HV_Restart-Sts") 
+}
+
+# Set HV restart mode
+record(bo, "$(Sys)$(Cntl)Mode:HV_Restart-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Set HV Restart Mode")
+	field(OUT,  "@gammampc.proto setHVERestart $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZNAM, "DISABLE")
+	field(ONAM, "ENABLE")
+	field(ASG,  "VAWRITE")
+	field(FLNK, "$(Sys)$(Cntl)Mode:HV_Restart-Sts")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get HV restart mode
+record(bi, "$(Sys)$(Cntl)Mode:HV_Restart-Sts") 
+{
+	field(DTYP, "stream")
+	field(DESC, "HV Restart Mode")
+	field(INP,  "@gammampc.proto getHVERestart $(PORT)")
+	field(ZNAM, "DISABLED")
+	field(ONAM, "ENABLED")
+	field(ZSV,  "NO_ALARM")
+	field(OSV,  "MAJOR")
+	field(FLNK, "$(Sys)$(Cntl)Evt:Log-I") 
+}
+
+# Set event number
+record(longout, "$(Sys)$(Cntl)Cnt:Evt-SP") 
+{
+	field(DESC, "Set Evt Number")
+	field(LOPR, "0")
+	field(HOPR, "50")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Read event log
+record(stringin, "$(Sys)$(Cntl)Evt:Log-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Event Log")
+	field(INP,  "@gammampc.proto getEventLog($(Sys),$(Cntl)) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Evt:Last-I") 
+}
+
+#Read last event
+record(stringin, "$(Sys)$(Cntl)Evt:Last-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Last Event Log")
+	field(INP,  "@gammampc.proto getLastEvent $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode:Comm-Sts") 
+}
+
+# Clear event log
+record(bo, "$(Sys)$(Cntl)Cmd:ClrLog-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Clear Log")
+	field(OUT,  "@gammampc.proto clearEventLog $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ONAM, "CLEAR")
+	field(ASG,  "VAWRITE")
+}
+
+# Set communication mode
+record(mbbo, "$(Sys)$(Cntl)Mode:Comm-Sel") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Set Comm Mode")
+	field(OUT,  "@gammampc.proto setCommMode $(PORT)")
+	field(ZRST, "LOCAL")
+	field(ONST, "REMOTE")
+	field(TWST, "FULL")
+	field(FLNK, "$(Sys)$(Cntl)Mode:Comm-Sts")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get communication mode
+record(mbbi, "$(Sys)$(Cntl)Mode:Comm-Sts") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Comm Mode")
+	field(INP,  "@gammampc.proto getCommMode $(PORT)")
+	field(ZRST, "LOCAL")
+	field(ONST, "REMOTE")
+	field(TWST, "FULL")
+	field(FLNK, "$(Sys)$(Cntl)Sts:AutoRestart-Sts") 
+}
+
+# Set supplies to automatically restart on power up
+record(bo, "$(Sys)$(Cntl)Cmd:AutoRestart-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Set Auto Restart")
+	field(OUT,  "@gammampc.proto setAutostartPower $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZNAM, "DISABLE")
+	field(ONAM, "ENABLE")
+	field(ASG,  "VAWRITE")
+	field(FLNK, "$(Sys)$(Cntl)Sts:AutoRestart-Sts")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Read auto restart status
+record(bi, "$(Sys)$(Cntl)Sts:AutoRestart-Sts") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Auto Restart Sts")
+	field(INP,  "@gammampc.proto getAutostartPower $(PORT)")
+	field(ZNAM, "DISABLED")
+	field(ONAM, "ENABLED")
+	field(ZSV,  "NO_ALARM")
+	field(OSV,  "MAJOR")
+	field(PINI, "YES")
+}
+
+# Read auto restart status of supply 2
+record(bo, "$(Sys)$(Cntl)Cmd:AutoRestart2-Cmd") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Set Auto Restart2")
+	field(OUT,  "@gammampc.proto setAutostartPower2 $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZNAM, "DISABLE")
+	field(ONAM, "ENABLE")
+	field(ASG,  "VAWRITE")
+	field(FLNK, "$(Sys)$(Cntl)Sts:AutoRestart2-Sts")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Set supply two to auto restart on power up
+record(bi, "$(Sys)$(Cntl)Sts:AutoRestart2-Sts") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Auto Restart2 Sts")
+	field(INP,  "@gammampc.proto getAutostartPower2 $(PORT)")
+	field(ZNAM, "DISABLED")
+	field(ONAM, "ENABLED")
+	field(ZSV,  "NO_ALARM")
+	field(OSV,  "MAJOR")
+	field(PINI, "YES")
+}
+
+

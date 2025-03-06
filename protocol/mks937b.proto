@@ -1,0 +1,361 @@
+## Stream Device Protocol for the MKS 937B Multi-Sensor System
+## Mar 23, 2011, BNL
+##
+
+locktimeout = 10000;
+replytimeout = 5000;
+readtimeout  = 100;
+writetimeout = 100;
+extrainput   = Ignore;
+MaxInput = 0;
+
+outTerminator = ";FF" CR;
+inTerminator  = ";FF";
+
+## Pressure reading commands
+## $1 = controller address: 253
+## $2 = channel number: 1 - 6
+
+# Pressure status
+pStat {
+	out "@\$1PR\$2?";
+	in  "@\$1ACK%s";
+	@mismatch {in "<01>";}
+}
+
+## Relay and control serial setting commands
+## $2 = relay number: 1 - 12
+# Set/Get a setpoint for relay $2
+getSP { 
+	out "@\$1SP\$2?"; 
+	in "@\$1ACK%E";
+}
+
+setSP {
+	out "@\$1SP\$2!%8.2E";
+	in  "@\$1ACK%E";
+#	@init { getSP; }
+}
+
+# Set/Get a hysteresis for relay $2
+getSH {
+	out "@\$1SH\$2?"; 
+	in "@\$1ACK%E";
+}
+
+setSH {
+	out "@\$1SH\$2!%8.2E";
+	in  "@\$1ACK%E";
+#	@init { getSH; }
+}
+
+# Set/Get the direction for relay $2
+getSD {
+	out "@\$1SD\$2?"; 
+	in "@\$1ACK%{BELOW|ABOVE}";
+}
+
+setSD {
+	out "@\$1SD\$2!%{BELOW|ABOVE}";
+	in  "@\$1ACK%{BELOW|ABOVE}";
+#	@init { getSD; }
+}
+
+# Set/Get enable status for relay $2
+getEN {
+	out "@\$1EN\$2?"; 
+	in  "@\$1ACK%{CLEAR|SET|ENABLE}";
+}
+
+setEN {
+	out "@\$1EN\$2!%{CLEAR|SET|ENABLE}";
+	in  "@\$1ACK%{CLEAR|SET|ENABLE}";
+#	@init { getEN; }
+}
+
+# Get relay setpoint status
+getSS {
+	out "@\$1SS\$2?";
+	in  "@\$1ACK%{CLEAR|SET}";
+}
+
+## Common ommands for CCG and Pirani
+# Get/Set channel power status for PR/CP/HC, or high voltage status for CC
+getChanPower {
+	out "@\$1CP\$2?"; 
+	in  "@\$1ACK%{OFF|ON}";
+}
+
+setChanPower {
+	out "@\$1CP\$2!%{OFF|ON}";
+	in  "@\$1ACK%{OFF|ON}";
+#	@init { getChanPower; }
+}
+
+# Get/Set gas type for PR/CP/HC/CC
+getGasType { 
+	out "@\$1GT\$2?"; 
+	in  "@\$1ACK%{NITROGEN|HELIUM|ARGON}";
+}
+
+setGasType {
+	out "@\$1GT\$2!%{NITROGEN|HELIUM|ARGON}";
+	in  "@\$1ACK%{NITROGEN|HELIUM|ARGON}";
+#	@init { getGasType; }
+}
+
+## Pirani and convection Pirani control commands
+## $2 = channel number: 5-6
+# Get/Set an atmospheric pressure to perform ATM calibration
+getATM { 
+	out "@\$1ATM\$2?"; 
+	in  "@\$1ACK%E"; 
+}
+
+setATM {
+	out "@\$1ATM\$2!%8.2E";
+	in  "@\$1ACK%E";
+#	@init { getATM; }
+}
+
+# Zero a PR/CP
+zeroTCG {
+	out "@\$1VAC\$2!";
+	in  "@\$1ACK%{NAK|OK}";
+	
+}
+
+# Get/Set an autozero control status for PR/CP
+getAutoZero { 
+	out "@\$1AZ\$2?"; 
+	in  "@\$1ACK%{NA|A1|B1}"; 
+}
+
+setAutoZero {
+	out "@\$1AZ\$2!%{NA|A1|B1}";
+	in  "@\$1ACK%{NA|A1|B1}";
+#	@init {getAutoZero; }
+}
+
+
+## Cold cathode control commands
+## $2 = channel number: 1,3,
+# Get/Set protection setpoint value
+getPRO { 
+	out "@\$1PRO\$2?"; 
+	in  "@\$1ACK%E";
+}
+
+setPRO {
+	out "@\$1PRO\$2!%8.2E";
+	in  "@\$1ACK%E";
+	@init { getPRO; }
+}
+
+# Get/Set control setpoint value
+getCSP {
+	out "@\$1CSP\$2?"; 
+	in  "@\$1ACK%E";
+}
+
+setCSP {
+	out "@\$1CSP\$2!%8.2E";
+	in  "@\$1ACK%E";
+	@init { getCSP; }
+}
+
+# Get/Set control setpoint hysteresis value
+getCHP { 
+	out "@\$1CHP\$2?"; 
+	in  "@\$1ACK%E";
+}
+
+setCHP {
+	out "@\$1CHP\$2!%8.2E";
+	in  "@\$1ACK%E";
+	@init { getCHP; }
+}
+
+# Enable/Disable control channel statust
+getCSE { 
+	out "@\$1CSE\$2?";
+	in  "@\$1ACK%{OFF|C1|C2}";
+}
+
+setCSE {
+	out "@\$1CSE\$2!%{OFF|C1|C2}";
+	in  "@\$1ACK%{OFF|C1|C2}";
+#	@init { getCSE; }
+}
+
+# Get/Set ion gauge turn on/off option
+getCTL { 
+	out "@\$1CTL\$2?"; 
+	in  "@\$1ACK%{OFF|AUTO|SAFE}";
+}
+
+setCTL {
+	out "@\$1CTL\$2!%{OFF|AUTO|SAFE}";
+	in  "@\$1ACK%{OFF|AUTO|SAFE}";
+#	@init { getCTL; }
+}
+
+# Get/Set a gas correction for a CC gauge
+getGasCorrection { 
+	out "@\$1UC\$2?"; 
+	in  "@\$1ACK%f"; 
+}
+
+setGasCorrection {
+	out "@\$1UG\$2!%03.1f";
+	in  "@\$1ACK%f";
+	@init { getGasCorrection; }
+}
+
+# Get ion gauge status
+getCCGStatus {
+	out "@\$1T\$2?;FF";
+	in  "@\$1ACK%{O|W|G|P|C|R|L}";
+}
+
+# Get/Set time delay for starting CCG
+getTDC { 
+	out "@\$1TDC\$2?"; 
+	in  "@\$1ACK%d"; 
+}
+
+setTDC {
+	out "@\$1TDC\$2!%03d";
+	in  "@\$1ACK%d";
+#	@init { getTDC; }
+}
+
+# Query/Set the pressure to trigger fast relay control output
+getFRC { 
+	out "@\$1FRC\$2?"; 
+	in  "@\$1ACK%E"; 
+}
+
+setFRC {
+	out "@\$1FRC\$2!%8.2E";
+	in  "@\$1ACK%E";
+#	@init { getFRC; }
+}
+
+
+## System commands
+# Enable/Disable parameter setting
+getSPM { 
+	out "@\$1SPM?";
+	in  "@\$1ACK%{DISABLE|ENABLE}";
+}
+
+setSPM {
+	out "@\$1SPM!%{DISABLE|ENABLE}";
+	in  "@\$1ACK%{DISABLE|ENABLE}";
+#	@init { getSPM; }
+}
+
+# Enable/Disable front panel lock
+getLock { 
+	out "@\$1LOCK?";
+	in  "@\$1ACK%{OFF|ON}";
+}
+
+setLock {
+	out "@\$1LOCK!%{OFF|ON}";
+	in  "@\$1ACK%{OFF|ON}";
+#	@init { getLock; }
+}
+
+# Enable/Disable user calibration
+getCalibration { 
+	out "@\$1CAL?"; 
+	in  "@\$1ACK%{DISABLE|ENABLE}";
+}
+
+setCalibration {
+	out "@\$1CAL!%{DISABLE|ENABLE}";
+	in  "@\$1ACK%{DISABLE|ENABLE}";
+#	@init { getCalibration; }
+}
+
+# Get pressure unit
+getUnit {
+	out "@\$1U?";
+	in  "@\$1ACK%{TORR|MBAR|PASCAL|MICRON}";
+}
+
+# Display connected sensor type
+getSensorType {
+	out "@\$1STA?";
+	out "@\$1STB?";
+	out "@\$1STC?";
+	in  "@\$1ACK%{CC|PR,PR|CP,CP|CP,PR|NC}";
+	@mismatch {in "@\$1ACKCP,NC";}
+	in  "@\$1ACK%(\$2\$3Type:B-Sts.VAL){CC|PR,PR|CP,CP|CP,PR|NC}";
+	@mismatch {in "@\$1ACKCP,NC";}
+	in  "@\$1ACK%(\$2\$3Type:C-Sts.VAL){CC|PR,PR|CP,CP|CP,PR|NC}";
+	@mismatch {in "@\$1ACKCP,NC";}
+}	
+
+# Get firmware version and serial number
+getFw {
+	out "@\$1FV1?";
+	out "@\$1FV2?";
+	out "@\$1FV3?";
+	out "@\$1FV4?";
+	out "@\$1FV6?";
+	out "@\$1SN?";
+	in  "@\$1ACK%4c";	
+	in  "@\$1ACK%(\$2\$3Ver:Fw2-I.VAL)4c";
+	in  "@\$1ACK%(\$2\$3Ver:Fw3-I.VAL)4c";
+	in  "@\$1ACK%(\$2\$3Ver:FwAIO-I.VAL)4c";
+	in  "@\$1ACK%(\$2\$3Ver:FwMain-I.VAL)4c";
+	in  "@\$1ACK%(\$2\$3ID-I.VAL)10c";
+}
+
+## Capacitance monometer control commands
+## $2 = channel number: 
+# Get/Set full scale pressure measurement range
+getRNG { 
+	out "@\$1RNG\$2?"; 
+	in  "@\$1ACK%E";
+}
+
+setRNG {
+	out "@\$1RNG\$2!%8.2E";
+	in  "@\$1ACK%E";
+	@init { getRNG; }
+}
+
+# Get/Set the full scale voltage output range
+getBVR {
+	out "@\$1BVR\$2?"; 
+	in  "@\$1ACK%d";
+}
+
+setBVR {
+	out "@\$1BVR\$2!%d";
+	in  "@\$1ACK%d";
+	@init { getBVR; }
+}
+
+# Zero a CM
+zeroCM {
+	out "@\$1VAC\$2!";
+	in  "@\$1ACK%{NAK|OK}";
+	
+}
+
+# Get/Set an autozero control status for CM
+getCM_AZ { 
+	out "@\$1AZ\$2?"; 
+	in  "@\$1ACK%{NA|A1|B1|C1}"; 
+}
+
+setCM_AZ {
+	out "@\$1AZ\$2!%{NA|A1|B1|C1}";
+	in  "@\$1ACK%{NA|A1|B1|C1}";
+#	@init {getCM_AZ; }
+}

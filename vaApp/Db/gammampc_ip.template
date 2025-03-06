@@ -1,0 +1,323 @@
+
+# Database for Gamma MPC
+
+## Substitutions:
+## Sys	-	Primary system
+## Cntl	-	Gauge controller name
+## Dev	-	Gauge name
+## PORT	-	IP or Serial port name
+## CHAN	-	PS channel, 1, 2
+
+## Ion Pump basic
+# Read current
+record(ai, "$(Sys)$(Dev)I-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Current")
+	field(INP, "@gammampc.proto getCurrent($(CHAN)) $(PORT)")
+	field(SCAN, "1 second")
+	field(FLNK, "$(Sys)$(Dev)P-I") 
+}
+
+# Read pressure
+record(ai, "$(Sys)$(Dev)P-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Pressure")
+	field(INP, "@gammampc.proto getPressure($(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)E-I")
+}
+
+# Read voltage
+record(ai, "$(Sys)$(Dev)E-I") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Volt")
+	field(INP, "@gammampc.proto getVoltage($(CHAN)) $(PORT)")
+	field(EGU, "Volts")
+	field(FLNK, "$(Sys)$(Dev)Sts:SupplyRaw-Sts") 
+}
+
+# Get supply status
+record(mbbi, "$(Sys)$(Dev)Sts:SupplyRaw-Sts") 
+{
+	field(DTYP, "stream")
+	field(DESC, "Raw Supply Status")
+	field(INP, "@gammampc.proto getSupplyStatus($(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)DB:SupplySts-Calc_")
+}
+
+record(calc, "$(Sys)$(Dev)DB:SupplySts-Calc_")
+{
+	field(DESC, "Supply Status Calc")
+	field(CALC, "A==77?7:A==78?8:FLOOR(A/11)")
+	field(INPA, "$(Sys)$(Dev)Sts:SupplyRaw-Sts NPP MS")
+	field(FLNK, "$(Sys)$(Dev)Sts:Supply-Sts PP")
+}
+
+record(mbbi, "$(Sys)$(Dev)Sts:Supply-Sts") 
+{
+	field(DESC, "Supply Status")
+	field(INP, "$(Sys)$(Dev)DB:SupplySts-Calc_ NPP MS")
+	field(FLNK, "$(Sys)$(Dev)DB:SupplyErr-Calc_ PP")
+	field(ZRST, "SAFECONN")
+	field(ONST, "RUNNING")
+	field(TWST, "COOLDOWN")
+	field(THST, "PUMP_ERROR")
+	field(FRST, "INTERLOCK")
+	field(FVST, "SHUT_DOWN")
+	field(SXST, "CALIBRATION")
+	field(SVST, "WAIT_TO_START")
+	field(EIST, "STANDBY")
+	field(ZRSV, "MAJOR")
+	field(ONSV, "NO_ALARM")
+	field(TWSV, "MAJOR")
+	field(THSV, "MAJOR")
+	field(FRSV, "MAJOR")
+	field(FVSV, "MAJOR")
+	field(SXSV, "MAJOR")
+	field(SVSV, "MINOR")
+	field(EISV, "MAJOR")
+}
+
+record(calc, "$(Sys)$(Dev)DB:SupplyErr-Calc_") 
+{
+	field(DESC, "Supply Code Calc")
+	field(INPA, "$(Sys)$(Dev)Sts:SupplyRaw-Sts NPP MS")
+	field(CALC, "A>=77?0: A%11")
+	field(FLNK, "$(Sys)$(Dev)Err:Supply-Sts PP")
+}
+
+record(mbbi, "$(Sys)$(Dev)Err:Supply-Sts") 
+{
+	field(DESC, "Supply Error")
+	field(INP, "$(Sys)$(Dev)DB:SupplyErr-Calc_ NPP MS")
+	field(FLNK, "$(Sys)$(Dev)Sts:HV-Sts") 
+	field(ZRST, "NO_ERROR")
+	field(ONST, "TOO_MANY_COOLDN")
+	field(TWST, "RUN_P_HIGH")
+	field(THST, "RUN_I_HIGH")
+	field(FRST, "START_P_HIGH")
+	field(FVST, "COOL_PUMP_PWR")
+	field(SXST, "COOL_SPLY_I")
+	field(SVST, "COOL_SHORT_CIRC")
+	field(EIST, "COOL_SPLY_MLFN")
+	field(NIST, "COOL_V_LOW")
+	field(TEST, "COOL_ARC_DETCT")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "MAJOR")
+	field(TWSV, "MAJOR")
+	field(THSV, "MAJOR")
+	field(FRSV, "MAJOR")
+	field(FVSV, "MAJOR")
+	field(SXSV, "MAJOR")
+	field(SVSV, "MAJOR")
+	field(EISV, "MAJOR")
+	field(NISV, "MAJOR")
+	field(TESV, "MAJOR")
+}
+
+# Get pump size
+record(ai, "$(Sys)$(Dev)Size:Pump-RB") 
+{
+	field(DESC, "Pump Size")
+	field(DTYP, "stream")
+	field(INP, "@gammampc.proto getPumpSize($(CHAN)) $(PORT)")
+	field(PINI, "YES")
+}
+
+# Set pump size
+record(ao, "$(Sys)$(Dev)Size:Pump-SP") 
+{
+	field(DESC, "Set Pump Size")
+	field(DTYP, "stream")
+	field(FLNK, "$(Sys)$(Dev)Size:Pump-RB")
+	field(OUT, "@gammampc.proto setPumpSize($(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(HOPR, "1200")
+	field(LOPR, "10")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get supply size
+record(bi, "$(Sys)$(Dev)Size:Supply-Sts") 
+{
+	field(DESC, "Supply Size")
+	field(DTYP, "stream")
+	field(INP, "@gammampc.proto getSupplySize($(CHAN)) $(PORT)")
+	field(ZNAM, "MEDIUM")
+	field(ONAM, "LARGE")
+	field(PINI, "YES")
+}
+
+# Get calibration factor
+record(ai, "$(Sys)$(Dev)Val:Cal-RB") 
+{
+	field(DESC, "Cal Factor")
+	field(DTYP, "stream")
+	field(INP, "@gammampc.proto getCalFactor($(CHAN)) $(PORT)")
+	field(PREC, "2")
+	field(PINI, "YES")
+}
+
+# Set calibration factor
+record(ao, "$(Sys)$(Dev)Val:Cal-SP") 
+{
+	field(DESC, "Set Cal Factor")
+	field(DTYP, "stream")
+	field(FLNK, "$(Sys)$(Dev)Val:Cal-RB")
+	field(OUT,  "@gammampc.proto setCalFactor($(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(LOPR, "0")
+	field(HOPR, "9.99")
+	field(PREC, "2")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get high voltage output
+record(ai, "$(Sys)$(Dev)E:Max-RB") 
+{
+	field(DESC, "Max E")
+	field(DTYP, "stream")
+	field(INP, "@gammampc.proto getHVStrapping($(CHAN)) $(PORT)")
+	field(EGU, "V")
+	field(PINI, "YES")
+}
+
+# Set display mode 
+record(mbbo, "$(Sys)$(Dev)Mode:Disp-Sel") 
+{
+	field(DESC, "Set Display")
+	field(DTYP, "stream")
+	field(OUT, "@gammampc.proto setDisplayMode($(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZRST, "VOLTAGE")
+	field(ONST, "CURRENT")
+	field(TWST, "PRESSURE")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Start/Stop pump
+record(bo, "$(Sys)$(Dev)Cmd:HV_On-Cmd") 
+{
+	field(DESC, "Start/Stop Pump")
+	field(DTYP, "stream")
+	field(OUT, "@gammampc.proto setHVOn($(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Sts:HV-Sts")
+	field(SDIS, "$(Sys)$(Dev)DB:HV-Calc_ PP")
+	field(DISV, "1")
+	field(ZNAM, "Stop")
+	field(ONAM, "Start")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(bo, "$(Sys)$(Dev)Cmd:HV_Off-Cmd") 
+{
+	field(DESC, "Start/Stop Pump")
+	field(DTYP, "stream")
+	field(OUT, "@gammampc.proto setHVOff($(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Sts:HV-Sts") 
+	field(SDIS, "$(Sys)$(Dev)DB:HV-Calc_ PP")
+	field(DISV, "0")
+	field(ZNAM, "Stop")
+	field(ONAM, "Start")
+	field(ASG,  "VAWRITE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Calculation if HV command is valid
+record(calc, "$(Sys)$(Dev)DB:HV-Calc_")
+{
+	field(DESC, "HV On Calc")
+	field(INPA, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(INPB, "$(Sys)$(Dev)Sts:HV-Sts")
+	field(CALC, "A&&B")	
+}
+
+# Get current/pressure analog output 
+record(mbbi, "$(Sys)$(Dev)Mode:AnalogOut-Sts") 
+{
+	field(DESC, "Analog Out")
+	field(DTYP, "stream")
+	field(INP, "@gammampc.proto getAnalogOutMode($(CHAN)) $(PORT)")
+	field(SCAN, "2 second")
+	field(ZRST, "LOG_P")
+	field(ONST, "LOG_I")
+	field(TWST, "V_PER_1_UA")
+	field(THST, "V_PER_10_UA")
+	field(FRST, "V_PER_100_UA")
+	field(FVST, "V_PER_1_MA")
+	field(SXST, "V_PER_10_MA")
+	field(SVST, "V_PER_50_MA")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "MAJOR")
+	field(TWSV, "MAJOR")
+	field(THSV, "MAJOR")
+	field(FRSV, "MAJOR")
+	field(FVSV, "MAJOR")
+	field(SXSV, "MAJOR")
+	field(SVSV, "MAJOR")
+	field(PINI, "YES")
+}
+
+# Set current/pressure analog output 
+record(mbbo, "$(Sys)$(Dev)Mode:AnalogOut-Sel") 
+{
+	field(DESC, "Set Analog Out")
+	field(DTYP, "stream")
+	field(OUT, "@gammampc.proto setAnalogoutMode($(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(ZRST, "LOG_P")
+	field(ONST, "LOG_I")
+	field(TWST, "V_PER_1_uA")
+	field(THST, "V_PER_10_uA")
+	field(FRST, "V_PER_100_uA")
+	field(FVST, "V_PER_1_mA")
+	field(SXST, "V_PER_10_mA")
+	field(SVST, "V_PER_50_mA")
+	field(FLNK, "$(Sys)$(Dev)Mode:AnalogOut-Sts")
+	field(ASG,  "VACWRITE")
+}
+
+# Get HV status
+record(bi, "$(Sys)$(Dev)Sts:HV-Sts") 
+{
+	field(DESC, "HV Status")
+	field(DTYP, "stream")
+	field(PINI, "YES")
+	field(INP, "@gammampc.proto getHVState($(CHAN)) $(PORT)")
+	field(OSV, "NO_ALARM")
+	field(ZNAM, "OFF")
+	field(ONAM, "ON")
+	field(ZSV,  "MINOR")
+}
+
+# Set offset for high current metering
+record(longout, "$(Sys)$(Dev)I:OffsetHi-SP") 
+{
+	field(DESC, "Set High I Offset")
+	field(DTYP, "stream")
+	field(OUT, "@gammampc.proto setIHighOffset($(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
+	field(DISV, "0")
+	field(LOPR, "-999")
+	field(HOPR, "999")
+	field(ASG,  "VAWRITE")
+	field(EGU,  "mA")
+
+	info(autosaveFields_pass0, "VAL")
+}
+

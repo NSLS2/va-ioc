@@ -1,0 +1,353 @@
+## Database for Varian Dual Ion pump
+## Mar 23, 2011, BNL
+
+## Substitutions
+## Sys		-	System
+## Cntl		-	Device name
+## Dev		-	Pump controller name
+## CHAN		- 	Ion pump channel
+## PORT		-	IP or Serial port name
+## TCG		- 	TCG software interlock
+
+# Get voltage measurement
+record(longin, "$(Sys)$(Dev)E-I")
+{
+        field(DESC, "Voltage Measurement")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(8$(CHAN)0) $(PORT)")
+        field(EGU,  "V")
+        field(HOPR, "7000")
+        field(LOPR, "0")
+	field(SCAN, "1 second")
+	field(FLNK, "$(Sys)$(Dev)I-I")
+}
+
+# Get current measurement
+record(ai, "$(Sys)$(Dev)I-I")
+{
+        field(DESC, "Current Measurement")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaExpCmd(8$(CHAN)1) $(PORT)")
+        field(EGU,  "A")
+	field(PREC, "1")
+	field(FLNK, "$(Sys)$(Dev)P-I")
+}
+
+# Get pressure measurement
+record(ai, "$(Sys)$(Dev)P-I")
+{
+        field(DESC, "Pressure Measurement")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaExpCmd(8$(CHAN)2) $(PORT)")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+	field(HOPR, "1.0E-3")
+	field(LOPR, "1.0E-11")	
+	field(HIHI, "2.0E-7")
+	field(HIGH, "5.0E-8")
+	field(LOLO, "0")
+	field(HHSV, "MAJOR")
+	field(HSV,  "MINOR")
+	field(LLSV, "MINOR")
+	field(FLNK, "$(Sys)$(Dev)DB:SV-Calc_")
+}
+
+# Get severity status
+record(calcout, "$(Sys)$(Dev)DB:SV-Calc_")
+{
+        field(DESC, "Sts Calc")
+        field(INPA, "$(Sys)$(Dev)Sts:HV-Sts MSS PP")
+        field(INPB, "$(Sys)$(Dev)P-I NMS NPP")
+	field(FLNK, "$(Sys)$(Dev)Sts:Intlk-Sts")
+#        field(FLNK, "$(Sys)$(Dev)DB:Scan-Calc_")
+}
+
+# Calc the sequence for scan
+record(calcout, "$(Sys)$(Dev)DB:Scan-Calc_")
+{
+        field(DESC, "Scan Calc")
+#	field(SCAN, "5 second")
+        field(CALC, "(A<B)?(A+C):D")
+        field(INPA, "$(Sys)$(Dev)DB:Scan-Calc_.VAL NPP")
+        field(INPB, "5")
+        field(INPC, "1")
+        field(INPD, "1")
+        field(OUT,  "$(Sys)$(Dev)DB:Scan-FOut_.SELN")
+        field(FLNK, "$(Sys)$(Dev)DB:Scan-FOut_")
+}
+
+record(fanout, "$(Sys)$(Dev)DB:Scan-FOut_")
+{
+        field(DESC, "Scan Fanout")
+        field(SELM, "Specified")
+	field(LNK1, "$(Sys)$(Dev)Sts:SP-Sts")
+	field(LNK2, "$(Sys)$(Dev)Mode:StartProt-Sts")
+        field(LNK3, "$(Sys)$(Dev)Pwr:Max-RB")
+        field(LNK4, "$(Sys)$(Dev)E:Max-RB")
+	field(LNK5, "$(Sys)$(Dev)I:Prot-RB")
+}
+
+# HV on/off
+record(bi, "$(Sys)$(Dev)Sts:HV-Sts")
+{
+	field(DESC, "HV On/Off")
+	field(DTYP, "stream")       
+	field(INP,  "@agilent4uhv.proto readLogicCmd(01$(CHAN)) $(PORT)")
+	field(ZNAM, "HV Off")
+	field(ONAM, "HV On")
+	field(ZSV,  "MINOR")
+}
+
+record(bo, "$(Sys)$(Dev)Cmd:HV-Cmd")
+{
+        field(DESC, "Set HV On/Off")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeLogicCmd(01$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Sts:HV-Sts")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(ZNAM, "HV Off")
+        field(ONAM, "HV On")
+        field(ZSV,  "MINOR")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Device number
+record(mbbi, "$(Sys)$(Dev)Type:Dev-Sts")
+{
+        field(DESC, "Device Type")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(6$(CHAN)0) $(PORT)")
+	field(ZRST, "None")
+	field(ONST, "500 StarCell")
+	field(TWST, "300 StarCell")
+	field(THST, "150 StarCell")
+	field(FRST, "75-55-40 StarCell")
+	field(FVST, "20 StarCell")
+	field(SXST, "500 diode")
+	field(SVST, "300 diode")
+	field(EIST, "150 diode")
+	field(NIST, "75-55-40 diode")
+	field(TEST, "20 diode")
+	field(ELST, "10 diode")
+	field(TVST, "75 sem")
+	field(TTST, "25 sem")
+	field(FTST, "10 sem")
+	field(PINI, "1")
+}
+
+record(mbbo, "$(Sys)$(Dev)Type:Dev-Sel")
+{
+        field(DESC, "Set Device Type")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(6$(CHAN)0) $(PORT)")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+
+        field(ZRST, "None")
+        field(ONST, "500 StarCell")
+        field(TWST, "300 StarCell")
+        field(THST, "150 StarCell")
+        field(FRST, "75-55-40 StarCell")
+        field(FVST, "20 StarCell")
+        field(SXST, "500 diode")
+        field(SVST, "300 diode")
+        field(EIST, "150 diode") 
+        field(NIST, "75-55-40 diode")
+        field(TEST, "20 diode")
+        field(ELST, "10 diode")
+        field(TVST, "75 sem")
+        field(TTST, "25 sem")
+        field(FTST, "10 sem")
+	field(FLNK, "$(Sys)$(Dev)Type:Dev-Sts")
+}
+
+# Power max
+record(longin, "$(Sys)$(Dev)Pwr:Max-RB")
+{
+        field(DESC, "Max Power")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(6$(CHAN)2) $(PORT)")
+	field(EGU,  "W")
+	field(HOPR, "80")
+}
+
+record(longout, "$(Sys)$(Dev)Pwr:Max-SP")
+{
+        field(DESC, "Set Max Power")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(6$(CHAN)2) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Pwr:Max-RB")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(EGU,  "W")
+        field(HOPR, "80")
+	field(LOPR, "20")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Target voltage
+record(longin, "$(Sys)$(Dev)E:Max-RB")
+{
+        field(DESC, "Max Voltage")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(6$(CHAN)3) $(PORT)")
+        field(EGU,  "V")
+        field(HOPR, "7000")
+}
+
+record(mbbo, "$(Sys)$(Dev)E:Max-Sel")
+{
+        field(DESC, "Set Max Voltage")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(6$(CHAN)3) $(PORT)")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(FLNK, "$(Sys)$(Dev)E:Max-RB")
+	field(ZRVL, "3000")
+	field(ONVL, "4000")
+	field(TWVL, "5000")
+	field(THVL, "6000")
+	field(FRVL, "7000")
+        field(ZRST, "3000 V")
+        field(ONST, "4000 V")
+	field(TWST, "5000 V")
+        field(THST, "6000 V")
+	field(FRST, "7000 V")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Protect current
+record(longin, "$(Sys)$(Dev)I:Prot-RB")
+{
+        field(DESC, "Protect Current")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(6$(CHAN)4) $(PORT)")
+        field(EGU,  "mA")
+        field(HOPR, "100")
+	field(FLNK, "$(Sys)$(Dev)P:SP-RB")
+}
+
+record(longout, "$(Sys)$(Dev)I:Prot-SP")
+{
+        field(DESC, "Set Protect Current")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(6$(CHAN)4) $(PORT)")
+        field(FLNK, "$(Sys)$(Dev)I:Prot-RB")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+	field(EGU,  "mA")
+	field(LOPR, "1")
+	field(HOPR, "100")
+        info(autosaveFields_pass0, "VAL")
+}
+
+# Set point
+record(ai, "$(Sys)$(Dev)P:SP-RB")
+{
+        field(DESC, "Get Setpoint")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaExpCmd(6$(CHAN)5) $(PORT)")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+	field(LOPR, "1.0E-9")
+        field(HOPR, "1.0E-5")
+}
+
+record(ao, "$(Sys)$(Dev)P:SP-SP")
+{
+        field(DESC, "Set Setpoint")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeAlphaExpCmd(6$(CHAN)5) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:SP-RB")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(EGU,  "Torr")
+        field(PREC, "1")
+        field(LOPR, "1.0E-9")
+        field(HOPR, "1.0E-5")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Start/Protect mode
+record(bi, "$(Sys)$(Dev)Mode:StartProt-Sts")
+{
+        field(DESC, "Start/Protect Mode")
+	field(INP, "$(Sys)$(Cntl)Mode:StartProt-Sts.B$(Indx)")
+        field(ZNAM, "Start")
+        field(ONAM, "Protect")
+}
+
+record(bo, "$(Sys)$(Dev)Mode:StartProt-Cmd")
+{
+        field(DESC, "Set Start/Protect Mode")
+        field(OUT, "$(Sys)$(Cntl)Mode:StartProt-Cmd.B$(Indx) PP")
+	field(FLNK, "$(Sys)$(Dev)Mode:StartProt-Sts")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(ZNAM, "Start")
+        field(ONAM, "Protect")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Fixed/Step mode  
+record(bi, "$(Sys)$(Dev)Mode:FixStep-Sts")
+{
+        field(DESC, "Fixed/Step Mode")
+        field(INP, "$(Sys)$(Cntl)Mode:FixStep-Sts.B$(Indx)")
+        field(ZNAM, "Fixed")
+        field(ONAM, "Step")
+}
+
+record(bo, "$(Sys)$(Dev)Mode:FixStep-Cmd")
+{
+        field(DESC, "Fixed/Step Mode")
+        field(OUT, "$(Sys)$(Cntl)Mode:FixStep-Cmd.B$(Indx) PP")
+	field(FLNK, "$(Sys)$(Dev)Mode:FixStep-Sts")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(ZNAM, "Fixed")
+        field(ONAM, "Step")
+}
+
+# Setpoint status
+record(bi, "$(Sys)$(Dev)Sts:SP-Sts")
+{
+        field(DESC, "SP Status")
+        field(INP, "$(Sys)$(Cntl)Sts:SP-Sts.B$(Indx)")
+        field(ZNAM, "Not Active")
+        field(ONAM, "Active")
+}
+
+# Interlock status
+record(bi, "$(Sys)$(Dev)Sts:Intlk-Sts")
+{
+        field(DESC, "Intlk Status")
+        field(INP, "$(Sys)$(Cntl)Sts:Intlk-Sts.B$(Indx)")
+        field(ZNAM, "Interlock Close")
+        field(ONAM, "Interlock Open")
+	field(FLNK, "$(Sys)$(Dev)DB:Scan-Calc_")
+}
+
+# Download settings to controller
+record(bo, "$(Sys)$(Dev)DB:Dwnld-Cmd")
+{
+	field(DESC, "Download to $(Dev)")
+	field(FLNK, "$(Sys)$(Dev)DB:Dwnld-Seq_")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(seq, "$(Sys)$(Dev)DB:Dwnld-Seq_")
+{
+        field(DESC, "Download Seq")
+        field(SELM, "All")
+	field(DO1,  "1")
+	field(DOL1, "$(Sys){}DB:IP_P_SP1-SP")
+        field(DOL2, "$(Sys){}DB:IP_E_Max-Sel")
+	field(DOL3, "$(Sys){}DB:IP_Pwr_Max-SP")
+        field(LNK1, "$(Sys)$(Dev)P:SP-SP PP")
+        field(LNK2, "$(Sys)$(Dev)E:Max-Sel PP")
+        field(LNK3, "$(Sys)$(Dev)Pwr:Max-SP PP")
+}
+

@@ -1,0 +1,267 @@
+## Database for Agilent 4UHV Ion Pump Controller
+## Mar 11, 2014, BNL
+
+## Substitutions
+## Sys          -       System
+## Cntl         -       Pump controller name
+## PORT         -       IP or Serial port name
+
+# Scan record
+record(bo, "$(Sys)$(Cntl)DB:Scan-Cmd_")
+{
+        field(DESC, "Scan Record")
+        field(SCAN, "1 second")
+        field(FLNK, "$(Sys)$(Cntl)DB:Scan-FOut_")
+}
+
+# Fanout record
+record(fanout, "$(Sys)$(Cntl)DB:Scan-FOut_")
+{
+        field(DESC, "Scan Fanout")
+        field(SELM, "All")
+        field(LNK1, "$(Sys)$(Cntl)Sts")
+        field(LNK2, "$(Sys)$(Cntl)Err-Sts")
+        field(LNK3, "$(Sys)$(Cntl)Sts:Intlk-Sts")
+	field(LNK4, "$(Sys)$(Cntl)Mode:Opr-Sts")
+        field(LNK5, "$(Sys)$(Cntl)Mode:StartProt-Sts")
+        field(LNK6, "$(Sys)$(Cntl)T:Fan-I")
+}
+
+# Operating mode
+record(mbbi, "$(Sys)$(Cntl)Mode:Opr-Sts")
+{
+        field(DESC, "Set Operating Mode")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(008) $(PORT)")
+        field(ZRST, "Serial")
+        field(ONST, "Remote")
+        field(TWST, "Local")
+	field(FLNK, "$(Sys)$(Cntl)Mode-Calc_")
+}
+
+record(calcout, "$(Sys)$(Cntl)Mode-Calc_")
+{
+        field(DESC, "Mode Calc")
+        field(FLNK, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(INPA, "$(Sys)$(Cntl)Mode:Opr-Sts")
+        field(OUT,  "$(Sys)$(Cntl)Mode:Ctrl-Sts_ PP")
+        field(CALC, "(A==0)?1:0")
+}
+
+record(bi, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+{
+        field(DESC, "Operation Status")
+        field(INP,  "$(Sys)$(Cntl)Mode-Calc_")
+        field(ZNAM, "Read Only")
+        field(ONAM, "Read/Write")
+        field(FLNK, "$(Sys)$(Cntl)T:HV2-I")
+}
+
+record(mbbo, "$(Sys)$(Cntl)Mode:Opr-Cmd")
+{
+        field(DESC, "Operating Mode")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(008) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode:Opr-Sts")
+        field(ZRST, "Serial")
+        field(ONST, "Remote")
+        field(TWST, "Local")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Controller status
+record(mbbi, "$(Sys)$(Cntl)Sts")
+{
+	field(DESC, "Status")
+	field(DTYP, "stream")
+	field(INP,  "@agilent4uhv.proto readNumCmd(205) $(PORT)")
+	field(ZRST, "No Error")
+	field(SXST, "Error")
+}
+
+# Error code
+record(mbbiDirect, "$(Sys)$(Cntl)Err-Sts")
+{
+        field(DESC, "Err Code")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(206) $(PORT)")
+	field(NOBT, "13")
+	field(FLNK, "$(Sys)$(Cntl)Sts:SP-Sts")
+}
+
+# Controller model
+record(stringin, "$(Sys)$(Cntl)Val:Model-I")
+{
+        field(DESC, "Model")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaCharCmd(319) $(PORT)")
+	field(PINI, "1")
+	field(FLNK, "$(Sys)$(Cntl)Val:SerlNo-I")
+}
+
+# Controller serial number
+record(stringin, "$(Sys)$(Cntl)Val:SerlNo-I")
+{
+        field(DESC, "Serial No")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaCharCmd(323) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)EU-Sts")
+}
+
+# Channel selection
+record(mbbi, "$(Sys)$(Cntl)Chan-Sts")
+{
+        field(DESC, "Channel Selection")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(505) $(PORT)")
+	field(ZRST, "All channels")
+	field(ONST, "Channel 1")
+	field(TWST, "Channel 2")
+	field(THST, "Channel 3")
+	field(FRST, "Channel 4")
+}
+
+record(mbbo, "$(Sys)$(Cntl)Chan-Sel")
+{
+        field(DESC, "Sel Channel")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(505) $(PORT)")
+	field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+	field(FLNK, "$(Sys)$(Cntl)Chan-Sts")
+        field(ZRST, "All channels")
+        field(ONST, "Channel 1")
+        field(TWST, "Channel 2")
+        field(THST, "Channel 3")
+        field(FRST, "Channel 4")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Pressure unit
+record(mbbi, "$(Sys)$(Cntl)EU-Sts")
+{
+        field(DESC, "Pressure Unit")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(600) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode:FixStep-Sts")
+        field(ZRST, "Torr")
+        field(ONST, "mBar")
+        field(TWST, "Pa")
+}
+
+record(mbbo, "$(Sys)$(Cntl)EU-Sel")
+{
+        field(DESC, "Set Pressure Unit")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeNumCmd(600) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)EU-Sts")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+        field(ZRST, "Torr")
+        field(ONST, "mBar")
+        field(TWST, "Pa")
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Start/Protect Mode
+record(mbbiDirect, "$(Sys)$(Cntl)Mode:StartProt-Sts")
+{
+        field(DESC, "Start/Protect Mode")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaBinCmd(602) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)T:HV3-I")
+}
+
+record(mbboDirect, "$(Sys)$(Cntl)Mode:StartProt-Cmd")
+{
+        field(DESC, "Set Start/Protect Mode")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeAlphaBinCmd(602) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Mode:StartProt-Sts")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+}
+
+# Fxed/Step Mode
+record(mbbiDirect, "$(Sys)$(Cntl)Mode:FixStep-Sts")
+{
+        field(DESC, "Fixed/Step Mode")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaBinCmd(603) $(PORT)")
+}
+
+record(mbboDirect, "$(Sys)$(Cntl)Mode:FixStep-Cmd")
+{
+        field(DESC, "Set Fixed/Step Mode")
+        field(DTYP, "stream")
+        field(OUT,  "@agilent4uhv.proto writeAlphaBinCmd(603) $(PORT)")
+        field(SDIS, "$(Sys)$(Cntl)Mode:Ctrl-Sts_")
+        field(DISV, "0")
+	field(NOBT, "4")
+	field(MASK, "15")
+	field(FLNK, "$(Sys)$(Cntl)Mode:FixStep-Sts")
+}
+
+# Temperture Fan
+record(longin, "$(Sys)$(Cntl)T:Fan-I")
+{
+        field(DESC, "Fan Temperature")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(800) $(PORT)")
+        field(EGU,  "C")
+	field(FLNK, "$(Sys)$(Cntl)T:HV4-I")
+}
+
+# Temperture HV1
+record(longin, "$(Sys)$(Cntl)T:HV1-I")
+{
+        field(DESC, "HV1 Temperature")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(801) $(PORT)")
+        field(EGU,  "C")
+}
+
+# Temperture HV2
+record(longin, "$(Sys)$(Cntl)T:HV2-I")
+{
+        field(DESC, "HV2 Temperature")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(802) $(PORT)")
+        field(EGU,  "C")
+}
+
+# Interlock status
+record(mbbiDirect, "$(Sys)$(Cntl)Sts:Intlk-Sts")
+{
+        field(DESC, "Interlock Status")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaBinCmd(803) $(PORT)")
+        field(FLNK, "$(Sys)$(Cntl)T:HV1-I")
+}
+
+# Status Set point
+record(mbbiDirect, "$(Sys)$(Cntl)Sts:SP-Sts")
+{
+        field(DESC, "SP Status")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readAlphaBinCmd(804) $(PORT)")
+}
+
+# Temperture HV3
+record(longin, "$(Sys)$(Cntl)T:HV3-I")
+{
+        field(DESC, "HV3 Temperature")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(808) $(PORT)")
+        field(EGU,  "C")
+}
+
+# Temperture HV4
+record(longin, "$(Sys)$(Cntl)T:HV4-I")
+{
+        field(DESC, "HV4 Temperature")
+        field(DTYP, "stream")
+        field(INP,  "@agilent4uhv.proto readNumCmd(809) $(PORT)")
+        field(EGU,  "C")
+}
+

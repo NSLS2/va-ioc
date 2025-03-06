@@ -1,0 +1,249 @@
+Terminator = "\r";
+
+@init{out " ";}
+ReplyTimeout = 10000;
+ReadTimeout = 10000;
+
+
+## Pump controller general commands
+
+#  Model number
+getModel {
+	out "~ 05 01 %01<SUM8>";
+	in "05 OK 00 DIGITEL %s %0<SUM8>";
+}
+
+# Firmware revision 
+getFirmware {
+	out "~ 05 02 %01<SUM8>"; 
+	in "05 OK 00 FIRMWARE VERSION: %s %0<SUM8>"; 
+}
+
+# Execute software reset
+masterReset {
+	out "~ 05 07 %01<SUM8>";
+}
+
+# Set pressure unit
+setUnit {	
+	out "~ 05 0E %{Torr|MBR|PA} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Get date and time
+getDatetime {
+	out "~ 05 0F %01<SUM8>";
+	in "05 OK 00 %(\$1:DAYOFWEEK.VAL)i %14c %0<SUM8>";
+}
+
+# Set data and time
+setDatetime {
+	out "~ 05 10 %(\$1:WKSET.RVAL)0i %(\$1:MOSET.VAL)0i/%(\$1:DYSET.VAL)02i/%(\$1:YRSET.VAL)02i %(\$1:HRSET.VAL)02i\:%(\$1:MISET.VAL)02i %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Get line frequency
+getLineFreq {
+	out "~ 05 24 %01<SUM8>";
+	in "05 OK 00 %2i %(EGU)s %0<SUM8>";
+}
+
+# Turn the cooling fan on/off
+setFan {
+	out "~ 05 32 %{OFF|ON} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Unlock/Lock keypad
+setKeypadLock {
+	out "~ 05 %{45|44} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Is fan on
+getFan {
+	out "~ 05 60 %01<SUM8>";
+	in "05 OK 00 %{NO|YES} %0<SUM8>";
+}
+
+# Set HV restart mode
+setHVERestart {
+	out "~ 05 68 %{NO|YES} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Get HV restart mode
+getHVERestart {
+	out "~ 05 69 %01<SUM8>";
+	in "05 OK 00 %{NO|YES} %0<SUM8>";
+}
+
+# Read event log
+getEventLog {
+	out "~ 05 CB %(\$1\$2Cnt:Evt-SP.VAL)i %01<SUM8>";
+	in "05 OK 00 %#s";
+}
+
+# Read last event
+getLastEvent {
+	out "~ 05 CC %01<SUM8>";
+	in "05 OK 00 %#s";
+}
+
+# Clear event log
+clearEventLog {
+	out "~ 05 CD %01<SUM8>";
+}
+
+# Set communication mode
+setCommMode {
+	out "~ 05 D3 %{0|1|2} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Get communication mode
+getCommMode {
+	out "~ 05 D4 %01<SUM8>";
+	in "05 OK 00 %{0|1|2} %0<SUM8>";
+}
+
+# Set supplies to automatically restart on power up
+setAutostartPower {
+	out "~ 05 33 %{NO|YES} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Read auto restart status
+getAutostartPower {
+	out "~ 05 34 %01<SUM8>";
+	in "05 OK 00 %{NO|YES} %0<SUM8>";
+}
+
+# Read auto restart status of supply 2
+getAutostartPower2 {
+	out "~ 05 35 %01<SUM8>";
+	in "05 OK 00 %{NO|YES} %0<SUM8>";
+}
+
+# Set supply two to auto restart on power up
+setAutostartPower2 {
+	out "~ 05 36 %{NO|YES} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+
+## Ion Pump basic
+# Read current
+getCurrent {
+        out "~ 05 0A \$1 %01<SUM8>";
+        in "05 OK 00 %f %(EGU)s %0<SUM8>";
+}
+
+# Read pressure
+getPressure {
+        out "~ 05 0B \$1 %01<SUM8>";
+        in "05 OK 00 %f %(EGU)s %0<SUM8>";
+}
+
+# Read voltage
+getVoltage {
+        out "~ 05 0C \$1 %01<SUM8>";
+        in  "05 OK 00 %i %0<SUM8>";
+}
+
+# Get supply status
+getSupplyStatus {
+	out "~ 05 0D \$1 %01<SUM8>";
+        in  "05 OK 00 %{SAFE-CONN 00|SAFE-CONN 01|SAFE-CONN 02|SAFE-CONN 03|SAFE-CONN 04|SAFE-CONN 05|SAFE-CONN 06|SAFE-CONN 07|SAFE-CONN 08|SAFE-CONN 09|SAFE-CONN 10|RUNNING 00|RUNNING 01|RUNNING 02|RUNNING 03|RUNNING 04|RUNNING 05|RUNNING 06|RUNNING 07|RUNNING 08|RUNNING 09|RUNNING 10|COOL DOWN 00|COOL DOWN 01|COOL DOWN 02|COOL DOWN 03|COOL DOWN 04|COOL DOWN 05|COOL DOWN 06|COOL DOWN 07|COOL DOWN 08|COOL DOWN 09|COOL DOWN 10|PUMP ERROR 00|PUMP ERROR 01|PUMP ERROR 02|PUMP ERROR 03|PUMP ERROR 04|PUMP ERROR 05|PUMP ERROR 06|PUMP ERROR 07|PUMP ERROR 08|PUMP ERROR 09|PUMP ERROR 10|INTERLOCK 00|INTERLOCK 01|INTERLOCK 02|INTERLOCK 03|INTERLOCK 04|INTERLOCK 05|INTERLOCK 06|INTERLOCK 07|INTERLOCK 08|INTERLOCK 09|INTERLOCK 10|SHUT DOWN 00|SHUT DOWN 01|SHUT DOWN 02|SHUT DOWN 03|SHUT DOWN 04|SHUT DOWN 05|SHUT DOWN 06|SHUT DOWN 07|SHUT DOWN 08|SHUT DOWN 09|SHUT DOWN 10|CALIBRATION 00|CALIBRATION 01|CALIBRATION 02|CALIBRATION 03|CALIBRATION 04|CALIBRATION 05|CALIBRATION 06|CALIBRATION 07|CALIBRATION 08|CALIBRATION 09|CALIBRATION 10|WAITING TO START|STANDBY} %0<SUM8>";
+}
+
+# Get pump size
+getPumpSize {
+	out "~ 05 11 \$1 %01<SUM8>";
+	in "05 OK 00 %i %(EGU)s %0<SUM8>";
+}
+
+# Set pump size
+setPumpSize {
+	out "~ 05 12 \$1,%i %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Get supply size
+getSupplySize {
+	out "~ 05 1C \$1 %01<SUM8>";
+	in "05 OK 00 %{MEDIUM|LARGE} %0<SUM8>";
+}
+
+# Get calibration factor
+getCalFactor {
+	out "~ 05 1D \$1 %01<SUM8>";
+	in "05 OK 00 %f %0<SUM8>";
+}
+
+# Set calibration factor
+setCalFactor {
+	out "~ 05 1E \$1,%1.2f %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Get HV strapping 
+getHVStrapping {
+	out "~ 05 20 \$1 %01<SUM8>";
+	in "05 OK 00 %i %0<SUM8>";
+}
+
+# Set display mode
+setDisplayMode {
+	out "~ 05 25 \$1,%{V|C|P} %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+# Start/Stop pump
+setHVOn {
+        out "~ 05 37 \$1 %01<SUM8>";
+        in "05 OK 00 %0<SUM8>";
+}
+
+setHVOff {
+        out "~ 05 38 \$1 %01<SUM8>";
+        in "05 OK 00 %0<SUM8>";
+}
+
+# Get/Set current/pressure analog output 
+getAnalogOutMode {
+	out "~ 05 50 \$1 %01<SUM8>";
+	in "05 OK 00 %{0 Logarithmic pressure|1 Logarithmic current|2 Volts per 1.0uA|3 Volts per 10.0uA|4 Volts per 100.0uA|5 Volts per 1.0mA|6 Volts per 10.0mA|7 Volts per 50.0mA} %0<SUM8>";
+}
+
+setAnalogOutMode {
+	out "~ 05 51 \$1,%i %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+	# @init { getAnalogOutMode; }
+}
+
+# Get HV status
+getHVState {
+	out "~ 05 61 \$1 %01<SUM8>";
+	in "05 OK 00 %{NO|YES} %0<SUM8>";
+}
+
+# Set offset for high current metering 
+setIHighOffset {
+        out "~ 05 63 \$1,%i %01<SUM8>";
+        in "05 OK 00 %0<SUM8>";
+}
+
+# Process set points
+getSetpoint {
+	out "~ 05 3C \$1 %01<SUM8>";
+	in "05 OK 00 \$1,%(\$2\$3Chan:Rly\$1-Sts.VAL)d,%(\$2\$3P:Rly\$1On-RB.VAL)E,%(\$2\$3P:Rly\$1Off-RB.VAL)E,%1i %0<SUM8>";
+}
+
+setSetpoint {
+	out "~ 05 3D \$1,%(\$2\$3Chan:Rly\$1-Sel.VAL)d,%(\$2\$3P:Rly\$1On-SP.VAL)1.1E,%(\$2\$3P:Rly\$1Off-SP.VAL)1.1E %01<SUM8>";
+	in "05 OK 00 %0<SUM8>";
+}
+
+
+

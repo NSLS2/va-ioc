@@ -1,0 +1,368 @@
+## Database for Varian TSP
+## Mar 23, 2011, BNL
+
+## Substitutions:
+## Sys		-	System
+## Cntl		-	TSP controller name
+## Dev		-	PUmp name
+## PORT		-	IP or Serial port name
+
+# Error status
+record(mbbi, "$(Sys)$(Dev)Err-Sts")
+{
+	field(DESC, "Error Status")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getError $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)DB:Scan-FOut_")
+	field(SCAN, "1 second")
+	field(ZRST, "No error")
+	field(ONST, "Overtemperature")
+	field(TWST, "MiniTiBall Intr")
+	field(THST, "TSP fil Intr")
+	field(FRST, "TSP defective")
+	field(FVST, "Short circuit")
+	field(UNSV, "INVALID")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "MINOR")
+  	field(TWSV, "MINOR")
+	field(THSV, "MINOR")
+	field(FRSV, "MINOR")
+	field(FVST, "MINOR")	
+}
+
+record(fanout, "$(Sys)$(Dev)DB:Scan-FOut_")
+{
+	field(DESC, "Scan Fanout1")
+	field(LNK1, "$(Sys)$(Dev)I:Absb-I")
+	field(LNK2, "$(Sys)$(Dev)E:Absb-I")
+	field(LNK3, "$(Sys)$(Dev)Sts:Ctrl-Sts")
+	field(LNK4, "$(Sys)$(Dev)Mode:StartStop-Sts")
+}
+
+# Absorbed current
+record(ai, "$(Sys)$(Dev)I:Absb-I")
+{
+	field(DESC, "Get Absorbed I")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getAbsorbedI $(PORT)")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")
+	field(EGU,  "A")	
+	field(PREC, "1")
+}
+
+# Absorbed voltage
+record(ai, "$(Sys)$(Dev)E:Absb-I")
+{
+	field(DESC, "Get Absorbed V")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getAbsorbedV() $(PORT)")
+	field(LINR, "SLOPE")
+	field(PREC, "1")
+	field(ESLO, "0.1")	
+	field(HOPR, "50")
+	field(EGU,  "V")
+}
+
+# Dev status
+record(mbbi, "$(Sys)$(Dev)Sts:Ctrl-Sts")
+{
+	field(DESC, "Get Status")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getCtrlStatus $(PORT)")
+	field(ZRST, "Stop")
+	field(ONST, "Fail")
+	field(TWST, "Wait Interlock")
+	field(THST, "Ramp")
+	field(FRST, "Wait Subl")
+	field(FVST, "Sublimation")
+	field(UNSV, "INVALID")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "MINOR")
+  	field(TWSV, "NO_ALARM")
+	field(THSV, "NO_ALARM")
+	field(FRSV, "NO_ALARM")
+	field(FVST, "NO_ALARM")	
+}
+
+# Process records
+record(seq, "$(Sys)$(Dev)DB:Proc-Seq_")
+{
+	field(DESC, "Process Seq")
+	field(SELM, "All")
+	field(DO1,  "1")
+	field(DO2,  "1")
+	field(DO3,  "1")
+        field(DO4,  "1")
+	field(DO5,  "1")
+        field(DO6,  "1")
+	field(DO7,  "1")
+	field(LNK1, "$(Sys)$(Dev)Sts:AutoStart-Sts.PROC")
+	field(LNK2, "$(Sys)$(Dev)Sts:ActvFil-Sts.PROC")
+	field(LNK3, "$(Sys)$(Dev)Mode:Opr-Sts.PROC")
+	field(LNK4, "$(Sys)$(Dev)I:Subl-RB.PROC")
+	field(LNK5, "$(Sys)$(Dev)Time:SublPerd-Sts.PROC")
+	field(LNK6, "$(Sys)$(Dev)Time:Subl-RB.PROC")
+	field(LNK7, "$(Sys)$(Dev)Sts:Recvr-Sts.PROC")
+}
+
+# Autostart setting
+record(bo, "$(Sys)$(Dev)Cmd:AutoStart-Cmd")
+{
+	field(DESC, "Set Autostart Status")
+	field(DTYP, "stream")       
+	field(OUT,  "@varian_tsp.proto setAutostart $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Sts:AutoStart-Sts")
+	field(ASG,  "VAWRITE")
+	field(ZNAM, "Yes")
+	field(ONAM, "No")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "1")
+}
+
+record(bi, "$(Sys)$(Dev)Sts:AutoStart-Sts")
+{
+	field(DESC, "Autostart Status")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getAutostart $(PORT)")
+	field(ZNAM, "Yes")
+	field(ONAM, "No")
+}
+
+# Baud rate
+record(mbbi, "$(Sys)$(Dev)BR-Sts")
+{
+	field(DESC, "Get Baud Rate")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getBaudrate $(PORT)")
+	field(ZRST, "600")
+	field(ONST, "1200")
+	field(TWST, "2400")
+	field(THST, "4800")
+	field(FRST, "9600")
+}
+
+# Active filament setting
+record(mbbo, "$(Sys)$(Dev)Cmd:ActvFil-Sel")
+{
+	field(DESC, "Set Active Filament")
+	field(DTYP, "stream")       
+	field(OUT,  "@varian_tsp.proto setActiveFil $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Sts:ActvFil-Sts")
+	field(ASG,  "VAWRITE")
+	field(ZRST, "Mini Ti-Ball")
+	field(ONST, "Filament 1")
+	field(TWST, "Filament 2")
+	field(THST, "Filament 3")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "1")
+}
+
+record(mbbi, "$(Sys)$(Dev)Sts:ActvFil-Sts")
+{
+	field(DESC, "Get Active Filament")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getActiveFil $(PORT)")
+	field(ZRST, "Mini Ti-Ball")
+	field(ONST, "Filament 1")
+	field(TWST, "Filament 2")
+	field(THST, "Filament 3")
+}
+
+# Start/stop Dev
+record(bo, "$(Sys)$(Dev)Mode:StartStop-Cmd")
+{
+	field(DESC, "Start/stop Dev")
+	field(DTYP, "stream")       
+	field(OUT,  "@varian_tsp.proto setCtrl $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Mode:StartStop-Sts")
+	field(ASG,  "VAWRITE")
+	field(ZNAM, "Stop")
+	field(ONAM, "Start")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(bi, "$(Sys)$(Dev)Mode:StartStop-Sts")
+{
+	field(DESC, "Dev Start/stop RBV")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getCtrl $(PORT)")
+	field(ZNAM, "Stop")
+	field(ONAM, "Start")
+}
+
+# Dev operating mode
+record(mbbo, "$(Sys)$(Dev)Mode:Opr-Sel")
+{
+	field(DESC, "Set Ctrl Mode")
+	field(DTYP, "stream")       
+	field(OUT,  "@varian_tsp.proto setCtrlMode $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Mode:Opr-Sts")
+	field(ASG,  "VAWRITE")
+	field(ZRST, "Manual")
+	field(ONST, "Automatic")
+	field(TWST, "Remote")
+	field(THST, "Auto/Remote")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "0")
+}
+
+record(mbbi, "$(Sys)$(Dev)Mode:Opr-Sts")
+{
+	field(DESC, "Get Ctrl Mode")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getCtrlMode $(PORT)")
+	field(ZRST, "Manual")
+	field(ONST, "Automatic")
+	field(TWST, "Remote")
+	field(THST, "Auto/Remote")
+}
+
+# Sublimation current
+record(ao, "$(Sys)$(Dev)I:Subl-SP")
+{
+	field(DESC, "Set Sublimation I")
+	field(DTYP, "stream")
+	field(OUT,  "@varian_tsp.proto setSublI $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)I:Subl-RB")
+	field(ASG,  "VAWRITE")
+	field(HOPR, "50")
+	field(LOPR, "30")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")	
+	field(EGU,  "A")
+	field(PREC, "1")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ai, "$(Sys)$(Dev)I:Subl-RB")
+{
+	field(DESC, "Get SublI")
+	field(DTYP, "stream")
+	field(INP,  "@varian_tsp.proto getSublI $(PORT)")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")	
+	field(HOPR, "50")
+	field(LOPR, "30")
+	field(EGU,  "A")
+}
+
+# Sublimation period
+record(mbbo, "$(Sys)$(Dev)Time:SublPerd-Sel")
+{
+	field(DESC, "Set Sublimation Period")
+	field(DTYP, "stream")
+	field(OUT,  "@varian_tsp.proto setSublPd $(PORT)")
+	field(DESC, "Set Sublimation Period")
+	field(FLNK, "$(Sys)$(Dev)Time:SublPerd-Sts")
+	field(ASG,  "VAWRITE")
+	field(ZRST, "3 Minute")
+	field(ONST, "10 Minute")
+	field(TWST, "30 Minute")
+	field(THST, "1 Hour")
+	field(FRST, "2 Hour")
+	field(FVST, "4 Hour")
+	field(SXST, "8 Hour")
+	field(SVST, "32 Hour")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(mbbi, "$(Sys)$(Dev)Time:SublPerd-Sts")
+{
+	field(DESC, "Get Sublimation Period")
+	field(DTYP, "stream")
+	field(INP,  "@varian_tsp.proto getSublPd $(PORT)")
+	field(ZRST, "3 Minute")
+	field(ONST, "10 Minute")
+	field(TWST, "30 Minute")
+	field(THST, "1 Hour")
+	field(FRST, "2 Hour")
+	field(FVST, "4 Hour")
+	field(SXST, "8 Hour")
+	field(SVST, "32 Hour")
+}
+
+# Recover
+record(bo, "$(Sys)$(Dev)Cmd:Recvr-Cmd")
+{
+	field(DESC, "Set Recover Status")
+	field(DTYP, "stream")       
+	field(OUT,  "@varian_tsp.proto setRecover $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Sts:Recvr-Sts")
+	field(ASG,  "VAWRITE")
+	field(ZNAM, "Automatic")
+	field(ONAM, "Manual")
+	field(VAL,  "1")
+}
+
+record(bi, "$(Sys)$(Dev)Sts:Recvr-Sts")
+{
+	field(DESC, "Read Recover Status")
+	field(DTYP, "stream")       
+	field(INP,  "@varian_tsp.proto getRecover $(PORT)")
+	field(ZNAM, "Automatic")
+	field(ONAM, "Manual")
+}
+
+# Sublimation time
+record(ao, "$(Sys)$(Dev)Time:Subl-SP")
+{
+	field(DESC, "Calc Sublimation K")
+	field(DTYP, "stream")
+	field(OUT,  "@varian_tsp.proto setSublK $(PORT)")
+	field(ASG,  "VAWRITE")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")	
+	field(EGU,  "Minute")
+	field(FLNK, "$(Sys)$(Dev)Time:Subl-RB")
+	field(PREC, "1")
+	field(HOPR, "10")
+	field(LOPR, "1")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ai, "$(Sys)$(Dev)Time:Subl-RB")
+{
+	field(DESC, "Get Sublimation Time")
+	field(DTYP, "stream")
+	field(INP,  "@varian_tsp.proto getSublK() $(PORT)")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")	
+	field(EGU,  "Minute")
+	field(PREC, "1")
+	field(HOPR, "10")
+	field(LOPR, "1")
+}
+
+# Download settings to TSP
+record(bo, "$(Sys)$(Dev)DB:Dwnld-Cmd")
+{
+	field(DESC, "Download to $(Dev)")
+	field(FLNK, "$(Sys)$(Dev)DB:Dwnld-Seq_")
+	field(ASG,  "VAWRITE")
+}
+
+record(seq, "$(Sys)$(Dev)DB:Dwnld-Seq_")
+{
+        field(DESC, "Download Seq")
+        field(SELM, "All")
+        field(DOL1, "$(P){}DB:TSP_ActvFil-Sel")
+	field(DOL2, "$(P){}DB:TSP_OprMode-Sel")
+	field(DOL3, "$(P){}DB:TSP_SublI-SP")
+	field(DOL4, "$(P){}DB:TSP_SublPerd-Sel")
+	field(DOL5, "$(P){}DB:TSP_SublTime-SP")
+        field(DOL6, "$(P){}DB:TSP_AutoStart-Cmd")
+	field(DOL7, "$(P){}DB:TSP_Recvr-Cmd")
+	field(LNK1, "$(Sys)$(Dev)Cmd:ActvFil-Sel PP")
+	field(LNK2, "$(Sys)$(Dev)Mode:Opr-Sel PP")
+	field(LNK3, "$(Sys)$(Dev)I:Subl-SP PP")
+	field(LNK4, "$(Sys)$(Dev)Time:SublPerd-Sel PP")
+        field(LNK5, "$(Sys)$(Dev)Time:Subl-SP PP")
+        field(LNK6, "$(Sys)$(Dev)Cmd:AutoStart-Cmd PP")
+	field(LNK7, "$(Sys)$(Dev)Cmd:Recvr-Cmd PP")
+	field(DLY4, "2")
+	field(DLY5, "3")
+	field(DLY6, "4")
+	field(DLY7, "5")
+}
+
