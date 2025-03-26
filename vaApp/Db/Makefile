@@ -17,7 +17,7 @@ DB += mks937b_relay_pirg.template
 DB += gammampcq_controller.template
 DB += gammampcq_ip.template
 DB += gammampcq_setpoint.template
-DB += gammampcq_digi.template
+DB += gammampcq_di.template
 
 DB += gammaspc_controller.template
 DB += gammaspc_ip.template
