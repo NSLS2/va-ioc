@@ -8,11 +8,11 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 
 # General controller
-DB += mks937b_controller.template
-DB += mks937b_ccg.template
-DB += mks937b_pirg.template
-DB += mks937b_relay_ccg.template
-DB += mks937b_relay_pirg.template
+DB += mks937b_controller.db
+DB += mks937b_ccg.db
+DB += mks937b_pirg.db
+DB += mks937b_relay_ccg.db
+DB += mks937b_relay_pirg.db
 
 DB += gammampcq_controller.template
 DB += gammampcq_ip.template
