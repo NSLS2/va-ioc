@@ -1,0 +1,172 @@
+## Database for MKS 937B Relay settings for Pirani
+## Mar 23, 2011, BNL
+
+## Substitutions:
+## Sys		-	System
+## Cntl		-	Gauge controller name
+## Dev		-	Gauge name
+## ADR		- 	Device address
+## PORT		-	IP or Serial port name
+## SPNUM 	-	Relay channel, 1-12
+
+# Scan 
+record(bo, "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-Cmd_")
+{
+	field(DESC, "CCG  Rly Scan")
+	field(SCAN, "5 second")
+	field(FLNK, "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-Calc_")
+}
+
+# Calc the sequence for scan
+record(calcout, "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-Calc_")
+{
+        field(DESC, "Scan Calc")
+        field(CALC, "(A<B)?(A+C):D")
+        field(INPA, "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-Calc_")
+        field(INPB, "7")
+        field(INPC, "1")
+        field(INPD, "1")
+        field(OUT,  "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-FOut_.SELN")
+        field(FLNK, "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-FOut_")
+}
+
+# Fanout record
+record(fanout, "$(Sys)$(Dev)DB:Rly$(SPNUM)Scan-FOut_")
+{
+        field(DESC, "Scan Fanout")
+        field(SELM, "Specified")
+	field(LNK1, "$(Sys)$(Dev)P:Rly$(SPNUM)-RB")
+        field(LNK2, "$(Sys)$(Dev)P:Rly$(SPNUM)Hyst-RB")
+        field(LNK3, "$(Sys)$(Dev)Dir:Rly$(SPNUM)-Sts")
+        field(LNK4, "$(Sys)$(Dev)Enbl:Rly$(SPNUM)-Sts")
+        field(LNK5, "$(Sys)$(Dev)Sts:Rly$(SPNUM)-Sts")
+}
+
+# Get/Set a setpoint for relay
+record(ai, "$(Sys)$(Dev)P:Rly$(SPNUM)-RB")
+{
+	field(DESC, "Get RLY$(SPNUM) SP")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getSP($(ADR),$(SPNUM)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(HOPR, "1.0E-1")
+	field(LOPR, "2.0E-3")
+}
+
+record(ao, "$(Sys)$(Dev)P:Rly$(SPNUM)-SP")
+{
+	field(DESC, "Set RLY$(SPNUM) SP")
+	field(DTYP, "stream")
+	field(OUT, "@mks937b.proto setSP($(ADR),$(SPNUM)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:Rly$(SPNUM)-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Lck:Par-Sts")       
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(PREC, "2")
+	field(DRVH, "1.0E-1")
+	field(DRVL, "2.0E-3")
+	field(EGU,  "Torr")
+}
+
+# Set/Get a hysteresis for relay
+record(ai, "$(Sys)$(Dev)P:Rly$(SPNUM)Hyst-RB")
+{
+	field(DESC, "Get RLY$(SPNUM) Hys")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getSH($(ADR),$(SPNUM)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(HOPR, "1.5E-1")
+	field(LOPR, "3.0E-3")
+}
+
+record(ao, "$(Sys)$(Dev)P:Rly$(SPNUM)Hyst-SP")
+{
+	field(DESC, "Set RLY$(SPNUM) Hys")
+	field(DTYP, "stream")
+	field(OUT, "@mks937b.proto setSH($(ADR),$(SPNUM)) $(PORT)")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Lck:Par-Sts")       
+	field(FLNK, "$(Sys)$(Dev)P:Rly$(SPNUM)Hyst-RB")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(DRVH, "1.5E-1")
+	field(DRVL, "3.0E-3")
+}
+
+# Set/Get the direction for relay
+record(bi, "$(Sys)$(Dev)Dir:Rly$(SPNUM)-Sts")
+{
+	field(DESC, "Get RLY$(SPNUM) Dir")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getSD($(ADR),$(SPNUM)) $(PORT)")
+	field(ZNAM, "BELOW >Pr")
+	field(ONAM, "ABOVE <Pr")	
+}
+
+record(bo, "$(Sys)$(Dev)Dir:Rly$(SPNUM)-Sel")
+{
+	field(DESC, "Set RLY$(SPNUM) Dir")
+	field(DTYP, "stream")
+	field(OUT, "@mks937b.proto setSD($(ADR),$(SPNUM)) $(PORT)")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Lck:Par-Sts")       
+	field(FLNK, "$(Sys)$(Dev)Dir:Rly$(SPNUM)-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZNAM, "BELOW >Pr")
+	field(ONAM, "ABOVE <Pr")	
+}
+
+# Set/Get enable status for relay
+record(mbbi, "$(Sys)$(Dev)Enbl:Rly$(SPNUM)-Sts")
+{
+	field(DESC, "Get RLY$(SPNUM) Enable Stat")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getEN($(ADR),$(SPNUM)) $(PORT)")
+	field(ZRST, "CLEAR")
+	field(ONST, "SET")	
+	field(TWST, "ENABLE")
+}
+
+record(mbbo, "$(Sys)$(Dev)Enbl:Rly$(SPNUM)-Sel")
+{
+	field(DESC, "Set RLY$(SPNUM) Enable")
+	field(DTYP, "stream")
+	field(OUT, "@mks937b.proto setEN($(ADR),$(SPNUM)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Enbl:Rly$(SPNUM)-Sts")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Lck:Par-Sts")       
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZRST, "CLEAR")
+	field(ONST, "SET")	
+	field(TWST, "ENABLE")
+}
+
+# Get the setpoint status
+record(bi, "$(Sys)$(Dev)Sts:Rly$(SPNUM)-Sts")
+{
+	field(DESC, "Get RLY$(SPNUM) Stat")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getSS($(ADR),$(SPNUM)) $(PORT)")
+	field(ZNAM, "CLEAR")
+	field(ONAM, "SET")	
+}
+
+
+
+
+
+
+
+
+

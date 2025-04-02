@@ -1,0 +1,233 @@
+## Database for MKS 937B settings for Capacitance manometer
+## Feb 16, 2021, BNL
+
+## Substitutions:
+## Sys		-	System
+## Cntl		-	Gauge controller name
+## Dev		-	Gauge name
+## ADR		- 	Device address
+## PORT		-	IP or Serial port name
+## CHAN 	-	PR channel, 1-6
+
+# Get pressure status
+record(stringin, "$(Sys)$(Dev)P:Raw-I")
+{
+	field(DESC, "Raw Pr Reading")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto pStat($(ADR),$(CHAN)) $(PORT)")
+	field(SCAN, "1 second")
+	field(FLNK, "$(Sys)$(Dev)P:Stat-ASub_")
+}
+
+# Calc for enabling/disabling presSsure reading
+record(aSub, "$(Sys)$(Dev)P:Stat-ASub_")
+{
+	field(DESC, "Raw Pr Proc")
+	field(INAM, "aSubMKSPrReadInit")
+	field(SNAM, "aSubMKSPrReadProc")
+	field(INPA, "$(Sys)$(Dev)P:Raw-I MSS")
+	field(FTA,  "STRING")
+	field(NOA,  "20")	
+	field(OUTA, "$(Sys)$(Dev)P-I_ PP MS")
+	field(FTVA, "DOUBLE")
+	field(NOVA, "1")
+	field(OUTB, "$(Sys)$(Dev)P-Sts PP MS")
+	field(FTVB, "SHORT")
+	field(NOVB, "1")
+}
+
+# Get pressure status
+record(mbbi, "$(Sys)$(Dev)P-Sts")
+{
+	field(DESC, "Pressure Status")
+	field(FLNK, "$(Sys)$(Dev)DB:SV-Calc_")
+	field(ZRST, "OK")
+	field(ONST, "LO<E-11")
+	field(TWST, "LO<E-04")
+	field(THST, "LO<E-03")
+	field(FRST, "ATM")
+	field(FVST, "OFF")
+	field(SXST, "RP_OFF")
+	field(SVST, "WAIT")
+	field(EIST, "CTRL_OFF")
+	field(NIST, "PROT_OFF")
+	field(TEST, "MISCONN")
+	field(ELST, "NOGAUGE")
+	
+	field(UNSV, "INVALID")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "INVALID")
+  	field(TWSV, "NO_ALARM")
+	field(THSV, "NO_ALARM")
+	field(FRSV, "MAJOR")
+	field(FVSV, "MAJOR")
+	field(SXSV, "INVALID")
+	field(SVSV, "NO_ALARM")
+	field(EISV, "INVALID")
+	field(NISV, "INVALID")
+	field(TESV, "INVALID")
+	field(ELSV, "INVALID")
+}
+
+# Read pressure
+record(calcout, "$(Sys)$(Dev)P-I_")
+{
+        field(DESC, "Pressure Reading")
+        field(INPA, "$(Sys)$(Dev)P:Stat-ASub_.VALA")
+        field(INPB, "$(Sys)$(Dev)P-Sts NPP MSS")
+        field(CALC, "A")
+        field(OUT,  "$(Sys)$(Dev)P-I MS")
+        field(FLNK, "$(Sys)$(Dev)P-I")
+}
+
+# Read pressure 
+record(ai, "$(Sys)$(Dev)P-I")
+{
+	field(DESC, "Pressure Reading")
+	field(EGU,  "Torr")
+	field(PREC, "2")
+	field(HOPR, "1.0E1")
+	field(LOPR, "1.0E-4")	
+	field(HIGH, "5.0E-3")
+	field(HIHI, "1.0E-2")
+	field(HSV,  "MINOR")
+	field(HHSV, "MAJOR")
+}
+
+# Get severity
+record(calc, "$(Sys)$(Dev)DB:SV-Calc_")
+{
+        field(DESC, "Severity Calc")
+        field(INPA, "$(Sys)$(Dev)P-Sts MSS NPP")
+        field(INPB, "$(Sys)$(Dev)P-I MSS NPP")
+}
+
+# Calc if signal is less than 5% of the full scale
+record(calc, "$(Sys)$(Dev)P:Zro-Calc_") 
+{
+	field(DESC, "Zero Pressure Calc")
+	field(INPA, "$(Sys)$(Dev)P-I MSS")
+	field(INPB, "$(Sys)$(Dev)P:Rng-RB MSS NPP")
+	field(CALC, "(A/B)<0.05?1:0")
+}
+
+## Scan records
+record(bo, "$(Sys)$(Dev)DB:Scan-Cmd_")
+{
+        field(DESC, "Scan Record")
+        field(SCAN, "5 second")
+        field(FLNK,  "$(Sys)$(Dev)DB:Scan-Calc_")
+}
+
+# Calc the sequence for scan
+record(calcout, "$(Sys)$(Dev)DB:Scan-Calc_") 
+{
+	field(DESC, "Scan Calc")
+	field(CALC, "(A<B)?(A+C):D")
+	field(INPA, "$(Sys)$(Dev)DB:Scan-Calc_")
+	field(INPB, "5")
+	field(INPC, "1")
+	field(INPD, "1")
+	field(OUT,  "$(Sys)$(Dev)DB:Scan-FOut_.SELN")
+	field(FLNK, "$(Sys)$(Dev)DB:Scan-FOut_")
+}
+
+# Fanout record
+record(fanout, "$(Sys)$(Dev)DB:Scan-FOut_")
+{
+	field(DESC, "Scan Fanout")
+	field(SELM, "Specified")
+	field(LNK1, "$(Sys)$(Dev)P:Rng-RB")
+	field(LNK2, "$(Sys)$(Dev)E:OutRng-Sts")
+	field(LNK3, "$(Sys)$(Dev)Sts:AutoZro-Sts")
+}	
+
+## Get/Set the full scale pressure measurement range
+record(ai, "$(Sys)$(Dev)P:Rng-RB") 
+{
+	field(DESC, "Full Scale P Range")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getRNG($(ADR),$(CHAN)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+}
+
+record(ao, "$(Sys)$(Dev)P:Rng-SP") 
+{
+	field(DESC, "Set Full Scale P Range")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setRNG($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:Rng-RB")
+	field(ASG,  "VAWRITE")
+	field(EGU,  "Torr")
+	field(PREC, "2")
+	field(HOPR, "20000")
+	field(LOPR, "0.01")	
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set full scale voltage output range
+record(bi, "$(Sys)$(Dev)E:OutRng-RB") 
+{
+	field(DESC, "Full Scale E Out Range")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getVBR($(ADR),$(CHAN)) $(PORT)")
+	field(ZNAM, "10 V")
+	field(ONAM, "5 V")
+}
+
+record(bo, "$(Sys)$(Dev)E:OutRng-Sel") 
+{
+	field(DESC, "Zero PR/CP")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto getVBR($(ADR),$(CHAN)) $(PORT)")
+	field(ZNAM, "10 V")
+	field(ONAM, "5 V")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Zero a CM
+record(bo, "$(Sys)$(Dev)Cmd:Zro-Cmd") 
+{
+	field(DESC, "Zero CM")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto zeroCM($(ADR),$(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Dev)P:Zro-Calc_ PP") 
+	field(DISV, "0")
+	field(ZNAM, "NAK")
+	field(ONAM, "OK")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set an autozero control for CM, or disable autozero
+record(mbbi, "$(Sys)$(Dev)Sts:AutoZro-Sts") 
+{
+	field(DESC, "Autozero Status")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getCM_AZ($(ADR),$(CHAN)) $(PORT)")
+	field(ZRST, "NA")
+	field(ONST, "A1")
+	field(TWST, "B1")
+	field(THST, "C1")
+}
+
+record(mbbo, "$(Sys)$(Dev)Cmd:AutoZro-Sel") 
+{
+	field(DESC, "Autozero Status")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setCM_AZ($(ADR),$(CHAN)) $(PORT)")
+	field(SDIS, "$(Sys)$(Dev)P:Zro-Calc_ PP") 
+	field(DISV, "0")
+	field(FLNK, "$(Sys)$(Dev)Sts:AutoZro-Sts")
+	field(ZRST, "NA")
+	field(ONST, "A1")
+	field(TWST, "B1")
+	field(THST, "C1")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+

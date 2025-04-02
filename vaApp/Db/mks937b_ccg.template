@@ -1,0 +1,391 @@
+## Database for MKS 937B settings for cold cathode gauges
+## Mar 23, 2011, BNL
+
+## Substitutions:
+## Sys	-	System
+## Cntl	-	Gauge controller name
+## Dev	-	Gauge name
+## ADR	-	Device address
+## PORT	-	IP or Serial port name
+## CHAN -	CC channel, 1,3,5
+
+
+# Get Pressure status
+record(stringin, "$(Sys)$(Dev)P:Raw-I")
+{
+	field(DESC, "Raw Pr Reading")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto pStat($(ADR),$(CHAN)) $(PORT)")
+	field(SCAN, ".5 second")
+	field(FLNK, "$(Sys)$(Dev)P:Stat-ASub_")
+}
+
+# Calc for enabling/disabling presSsure reading
+record(aSub, "$(Sys)$(Dev)P:Stat-ASub_")
+{
+	field(DESC, "Raw Pr Proc")
+	field(INAM, "aSubMKSPrReadInit")
+	field(SNAM, "aSubMKSPrReadProc")
+	field(INPA, "$(Sys)$(Dev)P:Raw-I MSS")
+	field(FTA,  "STRING")
+	field(NOA,  "20")	
+	field(OUTA, "$(Sys)$(Dev)P-I_ PP MS")
+	field(FTVA, "DOUBLE")
+	field(NOVA, "1")
+	field(OUTB, "$(Sys)$(Dev)P-Sts PP MS")
+	field(FTVB, "SHORT")
+	field(NOVB, "1")
+}
+
+# Get pressure status
+record(mbbi, "$(Sys)$(Dev)P-Sts")
+{
+	field(DESC, "Pressure Status")
+	field(FLNK, "$(Sys)$(Dev)DB:SV-Calc_")
+	field(ZRST, "OK")
+	field(ONST, "LO<E-11")
+	field(TWST, "LO<E-04")
+	field(THST, "LO<E-03")
+	field(FRST, "ATM")
+	field(FVST, "OFF")
+	field(SXST, "RP_OFF")
+	field(SVST, "WAIT")
+	field(EIST, "CTRL_OFF")
+	field(NIST, "PROT_OFF")
+	field(TEST, "MISCONN")
+	field(ELST, "NOGAUGE")
+	
+	field(UNSV, "INVALID")
+	field(ZRSV, "NO_ALARM")
+	field(ONSV, "NO_ALARM")
+	field(TWSV, "INVALID")
+	field(THSV, "INVALID")
+	field(FRSV, "MAJOR")
+	field(FVSV, "MINOR")
+	field(SXSV, "MINOR")
+	field(SVSV, "NO_ALARM")
+	field(EISV, "MAJOR")
+	field(NISV, "MINOR")
+	field(TESV, "INVALID")
+	field(ELSV, "INVALID")
+}
+
+# Read pressure
+record(calcout, "$(Sys)$(Dev)P-I_")
+{
+        field(DESC, "Pressure Reading")
+        field(INPA, "$(Sys)$(Dev)P:Stat-ASub_.VALA")
+        field(INPB, "$(Sys)$(Dev)P-Sts NPP MSS")
+        field(CALC, "A")
+        field(OUT,  "$(Sys)$(Dev)P-I MS")
+	field(FLNK, "$(Sys)$(Dev)P-I")
+}
+
+# Read pressure 
+record(ai, "$(Sys)$(Dev)P-I")
+{
+	field(DESC, "Pressure Reading")
+	field(FLNK, "$(Sys)$(Dev)P:Adel-Calc_")
+	field(EGU,  "Torr")
+	field(PREC, "1")
+	field(HOPR, "1.0E-3")
+	field(LOPR, "1.0E-11")	
+	field(HIHI, "2.0E-7")
+	field(HIGH, "5.0E-8")
+	field(HHSV, "MAJOR")
+	field(HSV,  "MINOR")
+}
+
+# Get severity
+record(calc, "$(Sys)$(Dev)DB:SV-Calc_")
+{
+        field(DESC, "Severity Calc")
+        field(INPA, "$(Sys)$(Dev)P-Sts MSS NPP")
+	field(INPB, "$(Sys)$(Dev)P-I NMS NPP")
+}
+
+# Calc pressure archive deadband
+record(calcout, "$(Sys)$(Dev)P:Adel-Calc_") 
+{
+	field(DESC, "Deadband Calc")
+	field(CALC, "A/B")
+	field(INPA, "$(Sys)$(Dev)P-I MSS")
+	field(INPB, "20")
+	field(OUT,  "$(Sys)$(Dev)P-I.ADEL")
+}
+
+## Scan records
+record(bo, "$(Sys)$(Dev)DB:Scan-Cmd_")
+{
+	field(DESC, "Scan Record")
+	field(SCAN, "2 second")
+	field(FLNK,  "$(Sys)$(Dev)DB:Scan-Calc_")
+}
+
+# Calc the sequence for scan
+record(calcout, "$(Sys)$(Dev)DB:Scan-Calc_") 
+{
+	field(DESC, "Scan Calc")
+	field(CALC, "(A<B)?(A+C):D")
+	field(INPA, "$(Sys)$(Dev)DB:Scan-Calc_")
+	field(INPB, "7")
+	field(INPC, "1")
+	field(INPD, "1")
+	field(OUT,  "$(Sys)$(Dev)DB:Scan-FOut_.SELN")
+	field(FLNK, "$(Sys)$(Dev)DB:Scan-FOut_")
+}
+
+# Fanout record
+record(fanout, "$(Sys)$(Dev)DB:Scan-FOut_")
+{
+	field(DESC, "Scan Fanout")
+	field(SELM, "Specified")
+	field(LNK1, "$(Sys)$(Dev)P:Prot-RB")
+	field(LNK2, "$(Sys)$(Dev)P:Ctrl-RB")
+	field(LNK3, "$(Sys)$(Dev)Chan:Ctrl-Sts")
+	field(LNK4, "$(Sys)$(Dev)Mode:CtrlGauge-Sts")
+	field(LNK5, "$(Sys)$(Dev)Pwr-Sts") 
+	field(LNK6, "$(Sys)$(Dev)Sts") 
+}	
+
+# Get/Set protection setpoint value
+record(ai, "$(Sys)$(Dev)P:Prot-RB")
+{
+	field(DESC, "Get PRO")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getPRO($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Val:GasCF-I")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(HOPR, "1.0E-02")
+	field(LOPR, "1.0E-05")
+}
+
+record(ao, "$(Sys)$(Dev)P:Prot-SP")
+{
+	field(DESC, "Set PRO")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setPRO($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:Prot-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Lck:Par-Sts")       
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(DRVH, "1.0E-02")
+	field(DRVL, "1.0E-05")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set control setpoint value
+record(ai, "$(Sys)$(Dev)P:Ctrl-RB")
+{
+	field(DESC, "Get CSP")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getCSP($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:CtrlHyst-RB")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(HOPR, "1.0E-02")
+	field(LOPR, "2.0E-03")
+}
+
+record(ao, "$(Sys)$(Dev)P:Ctrl-SP")
+{
+	field(DESC, "Set CSP")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setCSP($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:Ctrl-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Dev)Chan:Ctrl-Sts")       
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(DRVH, "1.0E-02")
+	field(DRVL, "2.0E-03")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set control setpoint hysteresis value
+record(ai, "$(Sys)$(Dev)P:CtrlHyst-RB")
+{
+	field(DESC, "Get CHP")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getCHP($(ADR),$(CHAN)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(LOPR, "1.1E-02")
+	field(HOPR, "2.2E-03")
+}
+
+record(ao, "$(Sys)$(Dev)P:CtrlHyst-SP")
+{
+	field(DESC, "Set CHP")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setCHP($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:CtrlHyst-RB")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Dev)Chan:Ctrl-Sts")    
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+   
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(DRVL, "1.1E-02")
+	field(DRVH, "2.2E-03")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Enable/Disable control channel statust
+record(mbbi, "$(Sys)$(Dev)Chan:Ctrl-Sts")
+{
+	field(DESC, "Get Control Stat")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getCSE($(ADR),$(CHAN)) $(PORT)")
+	field(ZRST, "OFF")
+	field(ONST, "C1")
+	field(TWST, "C2")
+}
+
+record(mbbo, "$(Sys)$(Dev)Chan:Ctrl-Sel")
+{
+	field(DESC, "Set Control Stat")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setCSE($(ADR),$(CHAN)) $(PORT)")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Cntl)Lck:Par-Sts")   
+	field(FLNK, "$(Sys)$(Dev)Chan:Ctrl-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZRST, "OFF")
+	field(ONST, "C1")
+	field(TWST, "C2")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set ion gauge turn on/off option
+record(mbbi, "$(Sys)$(Dev)Mode:CtrlGauge-Sts")
+{
+	field(DESC, "Get Control Stat")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getCTL($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Type:Gas-Sts") 
+	field(ZRST, "OFF")
+	field(ONST, "AUTO")
+	field(TWST, "SAFE")
+}
+
+record(mbbo, "$(Sys)$(Dev)Mode:CtrlGauge-Sel")
+{
+	field(DESC, "Set Control Stat")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setCTL($(ADR),$(CHAN)) $(PORT)")
+	field(DISV, "0")
+	field(SDIS, "$(Sys)$(Dev)Chan:Ctrl-Sts")   
+	field(FLNK, "$(Sys)$(Dev)Mode:CtrlGauge-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZRST, "OFF")
+	field(ONST, "AUTO")
+	field(TWST, "SAFE")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set channel power status
+record(bi, "$(Sys)$(Dev)Pwr-Sts") 
+{
+	field(DESC, "Power Status")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getChanPower($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Time:Dly-I")
+	field(ZNAM, "Off")
+	field(ONAM, "On")
+}
+
+record(bo, "$(Sys)$(Dev)Pwr-Cmd") 
+{
+	field(DESC, "Turn On/Off Power")
+	field(DTYP, "stream")
+	field(OUT,  "@mks937b.proto setChanPower($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Pwr-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+	
+	field(ZNAM, "Off")
+	field(ONAM, "On")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get a gas correction for a CC gauge
+record(ai, "$(Sys)$(Dev)Val:GasCF-I")
+{
+	field(DESC, "Get CC GasCor")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getGasCorrection($(ADR),$(CHAN)) $(PORT)")
+	field(PREC, "1")
+	field(HOPR, "10")
+	field(LOPR, "0.1")
+}
+
+# Get gas type 
+record(mbbi, "$(Sys)$(Dev)Type:Gas-Sts") 
+{
+	field(DESC, "Get Gastype")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getGasType($(ADR),$(CHAN)) $(PORT)")
+	field(ZRST, "N2")
+	field(ONST, "He")
+	field(TWST, "Ar")
+}
+
+# Get ion gauge status
+record(mbbi, "$(Sys)$(Dev)Sts") 
+{
+	field(DESC, "Get Gauge Status")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getCCGStatus($(ADR),$(CHAN)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:FastRly-I")
+	field(ZRST, "OFF")
+	field(ONST, "WAIT")
+	field(TWST, "GOOD")
+	field(THST, "PROTECT")
+	field(FRST, "Control")
+	field(FVST, "Rear Ctrl Off")
+	field(SXST, "Low Pressure")
+	field(ZRSV, "MINOR")
+}
+
+# Get time delay for starting CCG
+record(longin, "$(Sys)$(Dev)Time:Dly-I")
+{
+	field(DESC, "Get Time Delay")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getTDC($(ADR),$(CHAN)) $(PORT)")
+	field(HOPR, "300")
+	field(LOPR, "3")
+	field(EGU,  "s")
+}
+
+# Get the pressure to trigger fast relay control output
+record(ai, "$(Sys)$(Dev)P:FastRly-I")
+{
+	field(DESC, "Get Fast Relay")
+	field(DTYP, "stream")
+	field(INP,  "@mks937b.proto getFRC($(ADR),$(CHAN)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(HOPR, "5.0E-03")
+	field(LOPR, "2.0E-10")
+}
