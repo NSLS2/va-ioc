@@ -28,7 +28,7 @@ record(mbbi, "$(Sys)$(Cntl)Sts:Rly$(SPNUM)Func-Sts")
 	field(ZRST, "Off")
 	field(ONST, "Pressure Setpoint")
 	field(TWST, "HV Error")
-	field(THST, "HV On/Off LED")"
+	field(THST, "HV On/Off LED")
 }
  
 # Get setpoint supply channel
