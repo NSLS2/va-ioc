@@ -15,7 +15,7 @@ record(ai, "$(Sys)$(Dev)I-I")
 	field(DTYP, "stream")
 	field(DESC, "Current")
 	field(INP, "@gammampcq-tcp.proto getCurrent($(CHAN)) $(PORT)")
-	field(SCAN, "1 second")
+	field(SCAN, "2 second")
 	field(FLNK, "$(Sys)$(Dev)P-I") 
 }
 
@@ -140,7 +140,7 @@ record(mbbi, "$(Sys)$(Dev)Mode:AnalogOut-Sts")
 	field(DTYP, "stream")
 	field(INP, "@gammampcq-tcp.proto getAnalogOutMode($(CHAN),$(Sys)$(Dev)) $(PORT)")
 # Scan may not need
-	field(SCAN, "5 second")
+	field(SCAN, "10 second")
 	field(ZRST, "Off")
 	field(ONST, "LOG_P")
 	field(TWST, "LOG_I")
