@@ -2,7 +2,7 @@ outTerminator = "\r";
 inTerminator = "\r\r\n>";
 LockTimeout = 5000;
 ReplyTimeout = 2000;
-ReadTimeout =  100;
+ReadTimeout =  2000;
 WriteTimeout = 100;
 
 extrainput   = Ignore;
