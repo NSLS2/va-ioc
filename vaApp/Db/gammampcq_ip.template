@@ -212,7 +212,7 @@ record(bo, "$(Sys)$(Dev)Cmd:AutoRestart-Cmd")
 {
         field(DTYP, "stream")
         field(DESC, "Set Auto Restart")
-        field(OUT,  "@gammampcq-tcp.proto setAutostartPower($(CHAN))(PORT)")
+        field(OUT,  "@gammampcq-tcp.proto setAutostartPower($(CHAN)) $(PORT)")
         field(ZNAM, "NO")
         field(ONAM, "YES")
         field(ASG,  "VAWRITE")
