@@ -141,7 +141,7 @@ record(mbbi, "$(Sys)$(Dev)Mode:AnalogOut-Sts")
 	field(INP, "@gammampcq-tcp.proto getAnalogOutMode($(CHAN),$(Sys)$(Dev)) $(PORT)")
 # Scan may not need
 	field(SCAN, "5 second")
-	field(ZRST, "Off"
+	field(ZRST, "Off")
 	field(ONST, "LOG_P")
 	field(TWST, "LOG_I")
 	field(THST, "V_PER_1_uA")
