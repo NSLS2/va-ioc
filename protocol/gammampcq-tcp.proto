@@ -98,7 +98,7 @@ setHVOff {
 # Get/Set analog output mode
 getAnalogOutMode {
 	out "cmd 5A \$1";
-	in "OK 00 \$2,%{00|01|02|03|04|05|06|07|08|09|10|11|12},%(\$3Val:LogOffset-RB.VAL)d,%(\3Mode:Invert-Sts.VAL){0|1},%(\$3Mode:Resp-Sts){0|1})";
+	in "OK 00 \$1,%{00|01|02|03|04|05|06|07|08|09|10|11|12},%(\$2Val:LogOffset-RB.VAL)d,%(\2Mode:Invert-Sts.VAL){0|1},%(\$2Mode:Resp-Sts){0|1})";
 }
 
 # Get HV status, not in manual anymore

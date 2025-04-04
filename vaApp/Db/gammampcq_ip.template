@@ -138,7 +138,7 @@ record(mbbi, "$(Sys)$(Dev)Mode:AnalogOut-Sts")
 {
 	field(DESC, "Analog Out")
 	field(DTYP, "stream")
-	field(INP, "@gammampcq-tcp.proto getAnalogOutMode($(AICHAN),$(CHAN),$(Sys)$(Dev)) $(PORT)")
+	field(INP, "@gammampcq-tcp.proto getAnalogOutMode($(CHAN),$(Sys)$(Dev)) $(PORT)")
 # Scan may not need
 	field(SCAN, "5 second")
 	field(ZRST, "Off"
@@ -177,7 +177,6 @@ record(bi, "$(Sys)$(Dev)Mode:Resp-Sts")
 	field(ZNAM, "Normal")
 	field(ONAM, "Fast")
 }
-
 
 # Get HV status
 record(bi, "$(Sys)$(Dev)Sts:HV-Sts") 
