@@ -114,7 +114,7 @@ getSetpoint {
 }
 
 setSetpoint {
-	out "cmd 3B \$1,1,%(\$2Chan:Rly\$1-Sel.VAL){1|2},%(\$2P:Rly\$1On-SP.VAL)1.1E,%(\$2P:Rly\$1Off-SP.VAL)1.1E";
+	out "cmd 3B \$1,1,%(\$2Chan:Rly\$1-Sel.VAL){1|2|3|4},%(\$2P:Rly\$1On-SP.VAL)1.1E,%(\$2P:Rly\$1Off-SP.VAL)1.1E";
 	in "OK 00";
 }
 
