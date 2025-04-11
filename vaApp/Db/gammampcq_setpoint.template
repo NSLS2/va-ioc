@@ -35,10 +35,10 @@ record(mbbi, "$(Sys)$(Cntl)Sts:Rly$(SPNUM)Func-Sts")
 record(mbbi, "$(Sys)$(Cntl)Chan:Rly$(SPNUM)-Sts") 
 {
 	field(DESC, "Rly$(SPNUM) SP Chan")
-	field(ZRVL, "1")
-	field(ONVL, "2")
-	field(TWVL, "3")
-	field(THVL, "4")
+	field(ZRST, "1")
+	field(ONST, "2")
+	field(TWST, "3")
+	field(THST, "4")
 }
  
 # Get setpoint on value

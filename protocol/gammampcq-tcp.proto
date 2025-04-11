@@ -110,7 +110,7 @@ getHVState {
 # Process set points
 getSetpoint {
 	out "cmd 3B \$1";
-	in "OK 00 \$1,%(\$2Sts:Rly\$1Func-Sts.VAL)d,%(\$2Chan:Rly\$1-Sts.VAL){1|2},%(\$2P:Rly\$1On-RB.VAL)E,%(\$2P:Rly\$1Off-RB.VAL)E,%{0|1}";
+	in "OK 00 \$1,%(\$2Sts:Rly\$1Func-Sts.VAL)d,%(\$2Chan:Rly\$1-Sts.VAL){1|2|3|4},%(\$2P:Rly\$1On-RB.VAL)E,%(\$2P:Rly\$1Off-RB.VAL)E,%{0|1}";
 }
 
 setSetpoint {
