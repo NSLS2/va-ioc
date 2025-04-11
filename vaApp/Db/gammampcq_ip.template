@@ -191,22 +191,6 @@ record(bi, "$(Sys)$(Dev)Sts:HV-Sts")
 	field(ZSV,  "MINOR")
 }
 
-# Set offset for high current metering
-record(longout, "$(Sys)$(Dev)I:OffsetHi-SP") 
-{
-	field(DESC, "Set High I Offset")
-	field(DTYP, "stream")
-	field(OUT, "@gammampcq-tcp.proto setIHighOffset($(CHAN)) $(PORT)")
-	field(SDIS, "$(Sys)$(Cntl)Mode:Comm-Sts")
-	field(DISV, "0")
-	field(LOPR, "-999")
-	field(HOPR, "999")
-	field(ASG,  "VAWRITE")
-	field(EGU,  "mA")
-
-	info(autosaveFields_pass0, "VAL")
-}
-
 # Set supplies to automatically restart on power up
 record(bo, "$(Sys)$(Dev)Cmd:AutoRestart-Cmd")
 {
