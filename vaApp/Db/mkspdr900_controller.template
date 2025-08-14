@@ -1,0 +1,203 @@
+## Database for MKS Series 900 vacuum controllers
+## July 07, 2025, BNL
+
+## Substitutions:
+## Sys		-	System
+## Cntl		-	Gauge controller name
+## ADR		-	Device address
+## PORT		-	IP or Serial port name
+
+
+# Get pressure unit
+record(mbbi, "$(Sys)$(Cntl)EU-Sts")
+{
+	field(DESC, "Get Pressure Unit")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getUnit($(ADR)) $(PORT)")
+	field(ZRST, "TORR")
+	field(ONST, "MBAR")
+	field(TWST, "PASCAL")
+	field(THST, "MICRON")
+}
+
+# Display sensor module type
+record(mbbi, "$(Sys)$(Cntl)Type:A-Sts")
+{
+	field(DESC, "Get Module TypeA")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getSensorType($(ADR),$(Sys),$(Cntl)) $(PORT)")
+	field(FLNK, "$(Sys)$(Cntl)Ver:Fw1-I")
+	field(PINI, "1")
+	field(ZRST, "CC")
+	field(ONST, "PR")
+	field(TWST, "CP")
+	field(THST, "PR")
+	field(FRST, "NC")
+}
+
+record(mbbi, "$(Sys)$(Cntl)Type:B-Sts")
+{
+	field(DESC, "Get Module TypeB")
+	field(ZRST, "CC")
+	field(ONST, "PR")
+	field(TWST, "CP")
+	field(THST, "PR")
+	field(FRST, "NC")
+}
+
+record(mbbi, "$(Sys)$(Cntl)Type:C-Sts")
+{
+	field(DESC, "Get Module TypeC")
+	field(ZRST, "CC")
+	field(ONST, "PR")
+	field(TWST, "CP")
+	field(THST, "PR")
+	field(FRST, "NC")
+}
+
+# Get firmware version
+record(stringin, "$(Sys)$(Cntl)Ver:Fw-I")
+{
+	field(DESC, "Get FV")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getFw($(ADR)) $(PORT)")
+	field(PINI, "1")
+}
+
+# Get hardware version
+record(stringin, "$(Sys)$(Cntl)Ver:Hw-I")
+{
+	field(DESC, "Get HV")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getHw($(ADR)) $(PORT)")
+	field(PINI, "1")
+}
+
+# Get serial number
+record(stringin, "$(Sys)$(Cntl)ID-I")
+{
+	field(DESC, "Get Serial No")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getID($(ADR)) $(PORT)")
+	field(PINI, "1")
+}
+
+# Get time on
+record(longin, "$(Sys)$(Dev)Time:On-I")
+{
+	field(DESC, "Get Time On")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getTIC($(ADR)) $(PORT)")
+#	field(HOPR, "300")
+#	field(LOPR, "3")
+	field(EGU,  "hr")
+}
+
+# Get/Set alarm high limit
+record(ai, "$(Sys)$(Dev)P:AlrmHi-RB")
+{
+	field(DESC, "Get ALH")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getALH($(ADR)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+}
+
+record(ao, "$(Sys)$(Dev)P:AlrmHi-SP")
+{
+	field(DESC, "Set ALH")
+	field(DTYP, "stream")
+	field(OUT,  "@mkspdr900.proto setALL($(ADR)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:AlrmHi-RB")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(DRVH, "1.0E-02")
+	field(DRVL, "2.0E-03")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set alarm low limit
+record(ai, "$(Sys)$(Dev)P:AlrmLo-RB")
+{
+	field(DESC, "Get ALL")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getALL($(ADR)) $(PORT)")
+	field(PREC, "2")
+	field(EGU,  "Torr")
+}
+
+record(ao, "$(Sys)$(Dev)P:AlrmLo-SP")
+{
+	field(DESC, "Set ALL")
+	field(DTYP, "stream")
+	field(OUT,  "@mkspdr900.proto setALL($(ADR)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)P:AlrmLo-RB")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(PREC, "2")
+	field(EGU,  "Torr")
+	field(DRVH, "1.0E-02")
+	field(DRVL, "2.0E-03")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set action high
+record(mbbi, "$(Sys)$(Dev)Ena:ActHi-Sts")
+{
+	field(DESC, "Get Action High")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getACH($(ADR)) $(PORT)")
+	field(ZRST, "OFF")
+	field(ONST, "SHORT")
+	field(TWST, "LOOP")
+}
+
+record(mbbo, "$(Sys)$(Dev)Ena:ActHi-Sel")
+{
+	field(DESC, "Set Action High")
+	field(DTYP, "stream")
+	field(OUT,  "@mkspdr900.proto setACH($(ADR)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Ena:ActHi-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZRST, "OFF")
+	field(ONST, "SHORT")
+	field(TWST, "LOOP")
+
+	info(autosaveFields_pass0, "VAL")
+}
+
+# Get/Set action low
+record(mbbi, "$(Sys)$(Dev)Ena:ActLo-Sts")
+{
+	field(DESC, "Get Action Low")
+	field(DTYP, "stream")
+	field(INP,  "@mkspdr900.proto getACL($(ADR)) $(PORT)")
+	field(ZRST, "OFF")
+	field(ONST, "SHORT")
+	field(TWST, "LOOP")
+}
+
+record(mbbo, "$(Sys)$(Dev)Ena:ActLo-Sel")
+{
+	field(DESC, "Set Action High")
+	field(DTYP, "stream")
+	field(OUT,  "@mkspdr900.proto setACL($(ADR)) $(PORT)")
+	field(FLNK, "$(Sys)$(Dev)Ena:ActLo-Sts")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+
+	field(ZRST, "OFF")
+	field(ONST, "SHORT")
+	field(TWST, "LOOP")
+
+	info(autosaveFields_pass0, "VAL")
+}
+

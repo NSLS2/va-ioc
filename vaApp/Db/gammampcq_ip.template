@@ -110,8 +110,6 @@ record(bo, "$(Sys)$(Dev)Cmd:HV_On-Cmd")
 	field(DESC, "Start/Stop Pump")
 	field(DTYP, "stream")
 	field(OUT, "@gammampcq-tcp.proto setHVOn($(CHAN)) $(PORT)")
-	field(SDIS, "$(Sys)$(Dev)Sts:HV-Sts")
-	field(DISV, "1")
 	field(ZNAM, "Stop")
 	field(ONAM, "Start")
 	field(ASG,  "VAWRITE")
@@ -124,8 +122,6 @@ record(bo, "$(Sys)$(Dev)Cmd:HV_Off-Cmd")
 	field(DESC, "Start/Stop Pump")
 	field(DTYP, "stream")
 	field(OUT, "@gammampcq-tcp.proto setHVOff($(CHAN)) $(PORT)")
-	field(SDIS, "$(Sys)$(Dev)Sts:HV-Sts") 
-	field(DISV, "0")
 	field(ZNAM, "Stop")
 	field(ONAM, "Start")
 	field(ASG,  "VAWRITE")
@@ -176,19 +172,6 @@ record(bi, "$(Sys)$(Dev)Mode:Resp-Sts")
 	field(DESC, "Analog Output Reponse Mode")
 	field(ZNAM, "Normal")
 	field(ONAM, "Fast")
-}
-
-# Get HV status
-record(bi, "$(Sys)$(Dev)Sts:HV-Sts") 
-{
-	field(DESC, "HV Status")
-	field(DTYP, "stream")
-	field(PINI, "YES")
-	field(INP, "@gammampcq-tcp.proto getHVState($(CHAN)) $(PORT)")
-	field(OSV, "NO_ALARM")
-	field(ZNAM, "OFF")
-	field(ONAM, "ON")
-	field(ZSV,  "MINOR")
 }
 
 # Set supplies to automatically restart on power up
