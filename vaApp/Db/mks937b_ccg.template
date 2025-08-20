@@ -268,6 +268,9 @@ record(mbbo, "$(Sys)$(Dev)Chan:Ctrl-Sel")
 	field(ZRST, "OFF")
 	field(ONST, "C1")
 	field(TWST, "C2")
+	field(ZRVL, "0")
+	field(ONVL, "1")
+	field(TWVL, "2")
 
 	info(autosaveFields_pass0, "VAL")
 }
