@@ -150,6 +150,9 @@ record(mbbo, "$(Sys)$(Dev)Enbl:Rly$(SPNUM)-Sel")
 	field(ZRST, "CLEAR")
 	field(ONST, "SET")	
 	field(TWST, "ENABLE")
+	field(ZRVL, "0")
+	field(ONVL, "1")
+	field(TWVL, "2")
 }
 
 # Get the setpoint status
