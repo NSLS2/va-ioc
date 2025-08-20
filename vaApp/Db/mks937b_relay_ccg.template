@@ -133,8 +133,11 @@ record(mbbo, "$(Sys)$(Dev)Enbl:Rly$(SPNUM)-Sel")
 	info(autosaveFields_pass0, "VAL")
 
 	field(ZRST, "CLEAR")
+	field(ZRVL, "0")
 	field(ONST, "SET")	
+	field(ONVL, "1")
 	field(TWST, "ENABLE")
+	field(TWVL, "2")
 }
 
 # Get the setpoint status
