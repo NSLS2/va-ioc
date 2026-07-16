@@ -23,6 +23,17 @@ DB += gammaspc_controller.template
 DB += gammaspc_ip.template
 DB += gammaspc_setpoint.template
 
+DB += agilent4uhv-ip-download.template
+DB += agilent4uhv_controller.template
+DB += agilent4uhv_ip.template
+DB += variandual-ip-download.template
+DB += variandual_controller.template
+DB += variandual_ip.template
+DB += varian_tsp.template
+
+
+
+
 DB_INSTALLS += $(EPICS_BASE)/db/iocAdminSoft.db
 DB_INSTALLS += $(EPICS_BASE)/db/save_restoreStatus.db
 DB_INSTALLS += $(EPICS_BASE)/db/reccaster.db
