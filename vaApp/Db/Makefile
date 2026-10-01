@@ -30,7 +30,7 @@ DB += variandual-ip-download.template
 DB += variandual_controller.template
 DB += variandual_ip.template
 DB += varian_tsp.template
-
+DB += cell-tsp-download.template
 
 
 
