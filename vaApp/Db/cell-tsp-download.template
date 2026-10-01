@@ -1,0 +1,127 @@
+## Database for SR Straight TSP Parameter download
+## Mar 5, 2014, BNL
+
+record(mbbo, "$(Sys)G1{}DB:TSP_ActvFil-Sel")
+{
+	field(DESC, "Filament Sel")
+	field(ZRST, "Mini Ti-Ball")
+	field(ONST, "Filament 1")
+	field(TWST, "Filament 2")
+	field(THST, "Filament 3")
+	field(VAL,  "1")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys)G1{}DB:TSP_SublI-SP")
+{
+        field(DESC, "Sublimation I")
+        field(ASG,  "VAWRITE")
+	field(HOPR, "50")
+	field(LOPR, "30")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")	
+	field(EGU,  "A")
+	field(PREC, "1")
+	field(VAL,  "48")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(ao, "$(Sys)G1{}DB:TSP_SublTime-SP")
+{
+	field(DESC, "Sublimation Time")
+	field(ASG,  "VAWRITE")
+	field(LINR, "SLOPE")
+	field(ESLO, "0.1")	
+	field(EGU,  "Minute")
+	field(PREC, "1")
+	field(HOPR, "10")
+	field(LOPR, "1")
+	field(VAL,  "5")
+	info(autosaveFields_pass0, "VAL")
+}
+
+record(mbbo, "$(Sys)G1{}DB:TSP_SublPerd-Sel")
+{
+	field(DESC, "Sublimation Period")
+	field(ASG,  "VAWRITE")
+	field(ZRST, "3 Minute")
+	field(ONST, "10 Minute")
+	field(TWST, "30 Minute")
+	field(THST, "1 Hour")
+	field(FRST, "2 Hour")
+	field(FVST, "4 Hour")
+	field(SXST, "8 Hour")
+	field(SVST, "32 Hour")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "1")
+}
+
+record(bo, "$(Sys)G1{}DB:TSP_AutoStart-Cmd")
+{
+	field(DESC, "Set Autostart Status")
+	field(ASG,  "VAWRITE")
+	field(ZNAM, "Yes")
+	field(ONAM, "No")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "1")
+}
+
+record(mbbo, "$(Sys)G1{}DB:TSP_OprMode-Sel")
+{
+	field(DESC, "Set Ctrl Mode")
+	field(ASG,  "VAWRITE")
+	field(ZRST, "Manual")
+	field(ONST, "Automatic")
+	field(TWST, "Remote")
+	field(THST, "Auto/Remote")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "0")
+}
+
+record(bo, "$(Sys)G1{}DB:TSP_Recvr-Cmd")
+{
+	field(DESC, "Set Recover Status")
+	field(ASG,  "VAWRITE")
+	field(ZNAM, "Automatic")
+	field(ONAM, "Manual")
+	info(autosaveFields_pass0, "VAL")
+	field(VAL,  "1")
+}
+
+record(bo, "$(Sys)G1{}DB:TSP_Dwnld-Cmd")
+{
+        field(DESC, "Download TSP Setting")
+        field(ASG,  "VAWRITE")
+        field(VAL,  "1")
+	field(FLNK, "$(Sys)G1{}DB:TSP_Dwnld-Seq_")
+}
+
+record(seq, "$(Sys)G1{}DB:TSP_Dwnld-Seq_")
+{
+	field(DESC, "Straight TSP Dwnld Seq")
+	field(SELM, "All")
+	field(DO1, "1")
+	field(LNK1, "$(Sys)G1{TSP:1}DB:Dwnld-Cmd PP")
+}
+
+record(bo, "$(Sys)G1{}DB:TSP_StartStop-Cmd")
+{
+	field(DESC, "Start/Stop Sublimation")
+	field(ASG,  "VAWRITE")
+	info(autosaveFields_pass0, "VAL")
+	field(ZNAM, "Stop")
+	field(ONAM, "Start")
+	field(FLNK, "$(Sys)G1{}DB:TSP_StartStop-DFOut_")
+}
+
+record(dfanout, "$(Sys)G1{}DB:TSP_StartStop-DFOut_")
+{
+        field(DESC, "Straight TSP Start Sublimation")
+	field(OMSL, "closed_loop")
+	field(SELM, "All")
+	field(DOL,  "$(Sys)G1{}DB:TSP_StartStop-Cmd")
+        field(OUTA, "$(Sys)G1{TSP:1}Mode:StartStop-Cmd PP")
+}
+
+
